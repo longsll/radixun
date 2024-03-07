@@ -1,0 +1,4 @@
+.vscode/
+build/
+bin/main
+bin/log.txt

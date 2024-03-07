@@ -1,0 +1,38 @@
+# int
+system.port: 8080
+# string
+test: "aa"
+# vector
+system.int_vec: 
+    - 3
+    - 4
+    - 5
+# list
+system.int_list: 
+    - 3
+    - 4
+    - 5
+# set
+system.int_set: 
+    - 3
+    - 4
+    - 5
+# uset
+system.int_uset: 
+    - 3
+    - 4
+    - 5
+# map
+system.int_map: 
+    k: 3
+    a: 2
+# 转化为 a: 2 , k: 3
+# umap
+system.int_umap: 
+    k: 3
+# class
+class.person:
+    name: "xiaoming"
+    age: 18
+    sex: true
+
