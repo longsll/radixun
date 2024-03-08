@@ -1,11 +1,11 @@
 #include "address.h"
+#include "../common/endian.h"
 #include "../common/log.h"
 #include <sstream>
 #include <netdb.h>
 #include <ifaddrs.h>
 #include <stddef.h>
 
-#include "../common/endian.h"
 
 namespace radixun {
 
@@ -92,10 +92,11 @@ bool Address::Lookup(std::vector<Address::ptr>& result, const std::string& host,
             }
         }
     }
-
     if(node.empty()) {
         node = host;
     }
+
+    //node : address:xx , [address]:xx , www.xx.com
     RADIXUN_LOG_DEBUG(g_logger) << "node: " << node.c_str();
     int error = getaddrinfo(node.c_str(), service, &hints, &results);
     if(error) {
@@ -274,6 +275,7 @@ IPAddress::ptr IPAddress::Create(const char* address, uint16_t port) {
     }
 
     try {
+        //char* 转为 sockaddr* 初始化
         IPAddress::ptr result = std::dynamic_pointer_cast<IPAddress>(
                 Address::Create(results->ai_addr, (socklen_t)results->ai_addrlen));
         if(result) {
