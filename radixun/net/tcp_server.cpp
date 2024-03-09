@@ -4,11 +4,11 @@
 
 namespace radixun {
 
+static radixun::Logger::ptr g_logger = RADIXUN_LOG_NAME("system");
+
 static radixun::ConfigVar<uint64_t>::ptr g_tcp_server_read_timeout =
     radixun::Config::Lookup("tcp_server.read_timeout", (uint64_t)(60 * 1000 * 2),
             "tcp server read timeout");
-
-static radixun::Logger::ptr g_logger = RADIXUN_LOG_NAME("system");
 
 TcpServer::TcpServer(radixun::IOManager* woker,
                     radixun::IOManager* accept_woker)

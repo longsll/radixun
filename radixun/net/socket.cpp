@@ -17,97 +17,46 @@ Socket::Socket(int family, int type, int protocol)
     ,m_protocol(protocol)
     ,m_isConnected(false) {
 }
-
 Socket::~Socket() {
     close();
 }
+
+//creat
 
 Socket::ptr Socket::CreateTCP(radixun::Address::ptr address) {
     Socket::ptr sock(new Socket(address->getFamily(), TCP, 0));
     return sock;
 }
-
 Socket::ptr Socket::CreateUDP(radixun::Address::ptr address) {
     Socket::ptr sock(new Socket(address->getFamily(), UDP, 0));
     return sock;
 }
-
 Socket::ptr Socket::CreateTCPSocket() {
     Socket::ptr sock(new Socket(IPv4, TCP, 0));
     return sock;
 }
-
 Socket::ptr Socket::CreateUDPSocket() {
     Socket::ptr sock(new Socket(IPv4, UDP, 0));
     return sock;
 }
-
 Socket::ptr Socket::CreateTCPSocket6() {
     Socket::ptr sock(new Socket(IPv6, TCP, 0));
     return sock;
 }
-
 Socket::ptr Socket::CreateUDPSocket6() {
     Socket::ptr sock(new Socket(IPv6, UDP, 0));
     return sock;
 }
-
 Socket::ptr Socket::CreateUnixTCPSocket() {
     Socket::ptr sock(new Socket(UNIX, TCP, 0));
     return sock;
 }
-
 Socket::ptr Socket::CreateUnixUDPSocket() {
     Socket::ptr sock(new Socket(UNIX, UDP, 0));
     return sock;
 }
 
-int64_t Socket::getSendTimeout() {
-    FdCtx::ptr ctx = FdMgr::GetInstance()->get(m_sock);
-    if(ctx) {
-        return ctx->getTimeout(SO_SNDTIMEO);
-    }
-    return -1;
-}
-
-void Socket::setSendTimeout(int64_t v) {
-    struct timeval tv{int(v / 1000), int(v % 1000 * 1000)};
-    setOption(SOL_SOCKET, SO_SNDTIMEO, tv);
-}
-
-int64_t Socket::getRecvTimeout() {
-    FdCtx::ptr ctx = FdMgr::GetInstance()->get(m_sock);
-    if(ctx) {
-        return ctx->getTimeout(SO_RCVTIMEO);
-    }
-    return -1;
-}
-
-void Socket::setRecvTimeout(int64_t v) {
-    struct timeval tv{int(v / 1000), int(v % 1000 * 1000)};
-    setOption(SOL_SOCKET, SO_RCVTIMEO, tv);
-}
-
-bool Socket::getOption(int level, int option, void* result, socklen_t* len) {
-    int rt = getsockopt(m_sock, level, option, result, (socklen_t*)len);
-    if(rt) {
-        RADIXUN_LOG_DEBUG(g_logger) << "getOption sock=" << m_sock
-            << " level=" << level << " option=" << option
-            << " errno=" << errno << " errstr=" << strerror(errno);
-        return false;
-    }
-    return true;
-}
-
-bool Socket::setOption(int level, int option, const void* result, socklen_t len) {
-    if(setsockopt(m_sock, level, option, result, (socklen_t)len)) {
-        RADIXUN_LOG_DEBUG(g_logger) << "setOption sock=" << m_sock
-            << " level=" << level << " option=" << option
-            << " errno=" << errno << " errstr=" << strerror(errno);
-        return false;
-    }
-    return true;
-}
+//init
 
 void Socket::newSock() {
     m_sock = socket(m_family, m_type, m_protocol);
@@ -135,7 +84,7 @@ bool Socket::init(int sock) {
 
 void Socket::initSock() {
     int val = 1;
-    // SO_REUSEADDR 打开或关闭地址复用功能 option_value不等于0时，打开
+    // SO_REUSEADDR 打开地址复用功能
     setOption(SOL_SOCKET, SO_REUSEADDR, val);
     if(m_type == SOCK_STREAM) {
         // Nagle算法通过将小数据块合并成更大的数据块来减少网络传输的次数，提高网络传输的效率。
@@ -143,6 +92,8 @@ void Socket::initSock() {
         setOption(IPPROTO_TCP, TCP_NODELAY, val);
     }
 }
+
+//api
 
 bool Socket::bind(const Address::ptr addr) {
     if(!isValid()) {
@@ -244,6 +195,9 @@ bool Socket::close() {
     return false;
 }
 
+
+//io
+
 int Socket::send(const void* buffer, size_t length, int flags) {
     if(isConnected()) {
         return ::send(m_sock, buffer, length, flags);
@@ -319,6 +273,55 @@ int Socket::recvFrom(iovec* buffers, size_t length, Address::ptr from, int flags
         return ::recvmsg(m_sock, &msg, flags);
     }
     return -1;
+}
+
+//get & set
+
+int64_t Socket::getSendTimeout() {
+    FdCtx::ptr ctx = FdMgr::GetInstance()->get(m_sock);
+    if(ctx) {
+        return ctx->getTimeout(SO_SNDTIMEO);
+    }
+    return -1;
+}
+
+void Socket::setSendTimeout(int64_t v) {
+    struct timeval tv{int(v / 1000), int(v % 1000 * 1000)};
+    setOption(SOL_SOCKET, SO_SNDTIMEO, tv);
+}
+
+int64_t Socket::getRecvTimeout() {
+    FdCtx::ptr ctx = FdMgr::GetInstance()->get(m_sock);
+    if(ctx) {
+        return ctx->getTimeout(SO_RCVTIMEO);
+    }
+    return -1;
+}
+
+void Socket::setRecvTimeout(int64_t v) {
+    struct timeval tv{int(v / 1000), int(v % 1000 * 1000)};
+    setOption(SOL_SOCKET, SO_RCVTIMEO, tv);
+}
+
+bool Socket::getOption(int level, int option, void* result, socklen_t* len) {
+    int rt = getsockopt(m_sock, level, option, result, (socklen_t*)len);
+    if(rt) {
+        RADIXUN_LOG_DEBUG(g_logger) << "getOption sock=" << m_sock
+            << " level=" << level << " option=" << option
+            << " errno=" << errno << " errstr=" << strerror(errno);
+        return false;
+    }
+    return true;
+}
+
+bool Socket::setOption(int level, int option, const void* result, socklen_t len) {
+    if(setsockopt(m_sock, level, option, result, (socklen_t)len)) {
+        RADIXUN_LOG_DEBUG(g_logger) << "setOption sock=" << m_sock
+            << " level=" << level << " option=" << option
+            << " errno=" << errno << " errstr=" << strerror(errno);
+        return false;
+    }
+    return true;
 }
 
 Address::ptr Socket::getRemoteAddress() {
@@ -417,6 +420,8 @@ std::ostream& Socket::dump(std::ostream& os) const {
     os << "]";
     return os;
 }
+
+//event
 
 bool Socket::cancelRead() {
     return IOManager::GetThis()->cancelEvent(m_sock, radixun::IOManager::READ);
