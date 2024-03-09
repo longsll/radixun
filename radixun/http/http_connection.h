@@ -1,9 +1,9 @@
 #ifndef __RADIXUN_HTTP_CONNECTION_H__
 #define __RADIXUN_HTTP_CONNECTION_H__
 
-#include "../net/socket_stream.h"
 #include "http.h"
-#include "../net/uri.h"
+#include "uri.h"
+#include "../net/socket_stream.h"
 #include "../common/thread.h"
 
 #include <list>

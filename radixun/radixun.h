@@ -8,21 +8,22 @@
 #include "./common/scheduler.h"
 #include "./common/iomanager.h"
 #include "./common/hook.h"
-#include "./net/address.h"
 #include "./common/endian.h"
-#include "./net/socket.h"
 #include "./common/bytearray.h"
 #include "./common/macro.h"
 #include "./common/stream.h"
 #include "./net/socket_stream.h"
 #include "./net/tcp_server.h"
-#include "./net/uri.h"
+#include "./net/socket.h"
+#include "./net/address.h"
+#include "./http/uri.h"
 #include "./http/http.h"
 #include "./http/http_parser.h"
 #include "./http/servlet.h"
 #include "./http/http_connection.h"
 #include "./http/http_server.h"
 #include "./http/http_session.h"
+
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>
