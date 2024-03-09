@@ -54,6 +54,8 @@ bool CaseInsensitiveLess::operator()(const std::string& lhs
     return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
 }
 
+//httprequest
+
 HttpRequest::HttpRequest(uint8_t version, bool close)
     :m_method(HttpMethod::GET)
     ,m_version(version)
@@ -143,10 +145,6 @@ std::string HttpRequest::toString() const {
 }
 
 std::ostream& HttpRequest::dump(std::ostream& os) const {
-    //GET /uri HTTP/1.1
-    //Host: wwww.sylar.top
-    //
-    //
     os << HttpMethodToString(m_method) << " "
        << m_path
        << (m_query.empty() ? "" : "?")
@@ -174,6 +172,9 @@ std::ostream& HttpRequest::dump(std::ostream& os) const {
     }
     return os;
 }
+
+
+//httpresponse
 
 HttpResponse::HttpResponse(uint8_t version, bool close)
     :m_status(HttpStatus::OK)

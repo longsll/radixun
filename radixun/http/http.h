@@ -119,60 +119,31 @@ namespace http {
   XX(510, NOT_EXTENDED,                    Not Extended)                    \
   XX(511, NETWORK_AUTHENTICATION_REQUIRED, Network Authentication Required) \
 
-/**
- * @brief HTTP方法枚举
- */
+//HTTP方法枚举
 enum class HttpMethod {
 #define XX(num, name, string) name = num,
     HTTP_METHOD_MAP(XX)
 #undef XX
     INVALID_METHOD
 };
-
-/**
- * @brief HTTP状态枚举
- */
+//HTTP状态枚举
 enum class HttpStatus {
 #define XX(code, name, desc) name = code,
     HTTP_STATUS_MAP(XX)
 #undef XX
 };
 
-/**
- * @brief 将字符串方法名转成HTTP方法枚举
- * @param[in] m HTTP方法
- * @return HTTP方法枚举
- */
+//将字符串方法名转成HTTP方法枚举
 HttpMethod StringToHttpMethod(const std::string& m);
-
-/**
- * @brief 将字符串指针转换成HTTP方法枚举
- * @param[in] m 字符串方法枚举
- * @return HTTP方法枚举
- */
+//将字符串指针转换成HTTP方法枚举
 HttpMethod CharsToHttpMethod(const char* m);
-
-/**
- * @brief 将HTTP方法枚举转换成字符串
- * @param[in] m HTTP方法枚举
- * @return 字符串
- */
+//将HTTP方法枚举转换成字符串
 const char* HttpMethodToString(const HttpMethod& m);
-
-/**
- * @brief 将HTTP状态枚举转换成字符串
- * @param[in] m HTTP状态枚举
- * @return 字符串
- */
+//将HTTP状态枚举转换成字符串
 const char* HttpStatusToString(const HttpStatus& s);
 
-/**
- * @brief 忽略大小写比较仿函数
- */
+//忽略大小写比较仿函数
 struct CaseInsensitiveLess {
-    /**
-     * @brief 忽略大小写比较字符串
-     */
     bool operator()(const std::string& lhs, const std::string& rhs) const;
 };
 
@@ -223,9 +194,8 @@ T getAs(const MapType& m, const std::string& key, const T& def = T()) {
 }
 
 
-/**
- * @brief HTTP请求结构
- */
+//HTTP请求
+
 class HttpRequest {
 public:
     /// HTTP请求的智能指针
@@ -238,8 +208,6 @@ public:
      * @param[in] close 是否keepalive
      */
     HttpRequest(uint8_t version = 0x11, bool close = true);
-
-
 
     HttpMethod getMethod() const { return m_method;}
     uint8_t getVersion() const { return m_version;}
@@ -261,180 +229,65 @@ public:
     void setParams(const MapType& v) { m_params = v;}
     void setCookies(const MapType& v) { m_cookies = v;}
 
-    /**
-     * @brief 获取HTTP请求的头部参数
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在则返回对应值,否则返回默认值
-     */
+    //获取HTTP请求的头部参数(如果存在则返回对应值,否则返回默认值)
     std::string getHeader(const std::string& key, const std::string& def = "") const;
-
-    /**
-     * @brief 获取HTTP请求的请求参数
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在则返回对应值,否则返回默认值
-     */
+    //获取HTTP请求的请求参数
     std::string getParam(const std::string& key, const std::string& def = "") const;
-
-    /**
-     * @brief 获取HTTP请求的Cookie参数
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在则返回对应值,否则返回默认值
-     */
+    //获取HTTP请求的Cookie参数
     std::string getCookie(const std::string& key, const std::string& def = "") const;
-
-    
-    /**
-     * @brief 设置HTTP请求的头部参数
-     * @param[in] key 关键字
-     * @param[in] val 值
-     */
+    //设置HTTP请求的头部参数
     void setHeader(const std::string& key, const std::string& val);
-
-    /**
-     * @brief 设置HTTP请求的请求参数
-     * @param[in] key 关键字
-     * @param[in] val 值
-     */
-
+    //设置HTTP请求的请求参数
     void setParam(const std::string& key, const std::string& val);
-    /**
-     * @brief 设置HTTP请求的Cookie参数
-     * @param[in] key 关键字
-     * @param[in] val 值
-     */
+    //设置HTTP请求的Cookie参数
     void setCookie(const std::string& key, const std::string& val);
-
-    /**
-     * @brief 删除HTTP请求的头部参数
-     * @param[in] key 关键字
-     */
+    //删除HTTP请求的头部参数
     void delHeader(const std::string& key);
-
-    /**
-     * @brief 删除HTTP请求的请求参数
-     * @param[in] key 关键字
-     */
+    //删除HTTP请求的请求参数
     void delParam(const std::string& key);
-
-    /**
-     * @brief 删除HTTP请求的Cookie参数
-     * @param[in] key 关键字
-     */
+    //删除HTTP请求的Cookie参数
     void delCookie(const std::string& key);
-
-    /**
-     * @brief 判断HTTP请求的头部参数是否存在
-     * @param[in] key 关键字
-     * @param[out] val 如果存在,val非空则赋值
-     * @return 是否存在
-     */
+    //判断HTTP请求的头部参数是否存在(如果存在,val非空则赋值)
     bool hasHeader(const std::string& key, std::string* val = nullptr);
-
-    /**
-     * @brief 判断HTTP请求的请求参数是否存在
-     * @param[in] key 关键字
-     * @param[out] val 如果存在,val非空则赋值
-     * @return 是否存在
-     */
+    //判断HTTP请求的请求参数是否存在
     bool hasParam(const std::string& key, std::string* val = nullptr);
-
-    /**
-     * @brief 判断HTTP请求的Cookie参数是否存在
-     * @param[in] key 关键字
-     * @param[out] val 如果存在,val非空则赋值
-     * @return 是否存在
-     */
+    //判断HTTP请求的Cookie参数是否存在
     bool hasCookie(const std::string& key, std::string* val = nullptr);
 
-    /**
-     * @brief 检查并获取HTTP请求的头部参数
-     * @tparam T 转换类型
-     * @param[in] key 关键字
-     * @param[out] val 返回值
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回true,否则失败val=def
-     */
+    //检查并获取HTTP请求的头部参数
     template<class T>
     bool checkGetHeaderAs(const std::string& key, T& val, const T& def = T()) {
         return checkGetAs(m_headers, key, val, def);
     }
-
-    /**
-     * @brief 获取HTTP请求的头部参数
-     * @tparam T 转换类型
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回对应的值,否则返回def
-     */
+    //获取HTTP请求的头部参数
     template<class T>
     T getHeaderAs(const std::string& key, const T& def = T()) {
         return getAs(m_headers, key, def);
     }
-
-    /**
-     * @brief 检查并获取HTTP请求的请求参数
-     * @tparam T 转换类型
-     * @param[in] key 关键字
-     * @param[out] val 返回值
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回true,否则失败val=def
-     */
+    //检查并获取HTTP请求的请求参数
     template<class T>
     bool checkGetParamAs(const std::string& key, T& val, const T& def = T()) {
         return checkGetAs(m_headers, key, val, def);
     }
-
-    /**
-     * @brief 获取HTTP请求的请求参数
-     * @tparam T 转换类型
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回对应的值,否则返回def
-     */
+    //获取HTTP请求的请求参数
     template<class T>
     T getParamAs(const std::string& key, const T& def = T()) {
         return getAs(m_headers, key, def);
     }
-
-    /**
-     * @brief 检查并获取HTTP请求的Cookie参数
-     * @tparam T 转换类型
-     * @param[in] key 关键字
-     * @param[out] val 返回值
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回true,否则失败val=def
-     */
+    //检查并获取HTTP请求的Cookie参数
     template<class T>
     bool checkGetCookieAs(const std::string& key, T& val, const T& def = T()) {
         return checkGetAs(m_headers, key, val, def);
     }
-
-    /**
-     * @brief 获取HTTP请求的Cookie参数
-     * @tparam T 转换类型
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回对应的值,否则返回def
-     */
+    //获取HTTP请求的Cookie参数
     template<class T>
     T getCookieAs(const std::string& key, const T& def = T()) {
         return getAs(m_headers, key, def);
     }
 
-    /**
-     * @brief 序列化输出到流中
-     * @param[in, out] os 输出流
-     * @return 输出流
-     */
+    //序列化输出到流中
     std::ostream& dump(std::ostream& os) const;
-
-    /**
-     * @brief 转成字符串类型
-     * @return 字符串
-     */
+    //转成字符串类型
     std::string toString() const;
 private:
     /// HTTP方法
@@ -475,131 +328,36 @@ public:
      */
     HttpResponse(uint8_t version = 0x11, bool close = true);
 
-    /**
-     * @brief 返回响应状态
-     * @return 请求状态
-     */
     HttpStatus getStatus() const { return m_status;}
-
-    /**
-     * @brief 返回响应版本
-     * @return 版本
-     */
     uint8_t getVersion() const { return m_version;}
-
-    /**
-     * @brief 返回响应消息体
-     * @return 消息体
-     */
     const std::string& getBody() const { return m_body;}
-
-    /**
-     * @brief 返回响应原因
-     */
     const std::string& getReason() const { return m_reason;}
-
-    /**
-     * @brief 返回响应头部MAP
-     * @return MAP
-     */
     const MapType& getHeaders() const { return m_headers;}
-
-    /**
-     * @brief 设置响应状态
-     * @param[in] v 响应状态
-     */
     void setStatus(HttpStatus v) { m_status = v;}
-
-    /**
-     * @brief 设置响应版本
-     * @param[in] v 版本
-     */
     void setVersion(uint8_t v) { m_version = v;}
-
-    /**
-     * @brief 设置响应消息体
-     * @param[in] v 消息体
-     */
     void setBody(const std::string& v) { m_body = v;}
-
-    /**
-     * @brief 设置响应原因
-     * @param[in] v 原因
-     */
     void setReason(const std::string& v) { m_reason = v;}
-
-    /**
-     * @brief 设置响应头部MAP
-     * @param[in] v MAP
-     */
     void setHeaders(const MapType& v) { m_headers = v;}
-
-    /**
-     * @brief 是否自动关闭
-     */
     bool isClose() const { return m_close;}
-
-    /**
-     * @brief 设置是否自动关闭
-     */
     void setClose(bool v) { m_close = v;}
-
-    /**
-     * @brief 获取响应头部参数
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在返回对应值,否则返回def
-     */
     std::string getHeader(const std::string& key, const std::string& def = "") const;
-
-    /**
-     * @brief 设置响应头部参数
-     * @param[in] key 关键字
-     * @param[in] val 值
-     */
     void setHeader(const std::string& key, const std::string& val);
-
-    /**
-     * @brief 删除响应头部参数
-     * @param[in] key 关键字
-     */
     void delHeader(const std::string& key);
 
-    /**
-     * @brief 检查并获取响应头部参数
-     * @tparam T 值类型
-     * @param[in] key 关键字
-     * @param[out] val 值
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回true,否则失败val=def
-     */
+    //检查并获取响应头部参数
     template<class T>
     bool checkGetHeaderAs(const std::string& key, T& val, const T& def = T()) {
         return checkGetAs(m_headers, key, val, def);
     }
-
-    /**
-     * @brief 获取响应的头部参数
-     * @tparam T 转换类型
-     * @param[in] key 关键字
-     * @param[in] def 默认值
-     * @return 如果存在且转换成功返回对应的值,否则返回def
-     */
+    //获取响应的头部参数
     template<class T>
     T getHeaderAs(const std::string& key, const T& def = T()) {
         return getAs(m_headers, key, def);
     }
 
-    /**
-     * @brief 序列化输出到流
-     * @param[in, out] os 输出流
-     * @return 输出流
-     */
+    //序列化输出到流
     std::ostream& dump(std::ostream& os) const;
-
-    /**
-     * @brief 转成字符串
-     */
+    //转成字符串
     std::string toString() const;
 private:
     /// 响应状态
@@ -616,20 +374,9 @@ private:
     MapType m_headers;
 };
 
-/**
- * @brief 流式输出HttpRequest
- * @param[in, out] os 输出流
- * @param[in] req HTTP请求
- * @return 输出流
- */
+//流式输出HttpRequest
 std::ostream& operator<<(std::ostream& os, const HttpRequest& req);
-
-/**
- * @brief 流式输出HttpResponse
- * @param[in, out] os 输出流
- * @param[in] rsp HTTP响应
- * @return 输出流
- */
+//流式输出HttpResponse
 std::ostream& operator<<(std::ostream& os, const HttpResponse& rsp);
 
 }
