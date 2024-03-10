@@ -1,8 +1,17 @@
 #include "radixun.h"
 
+
 static radixun::Logger::ptr g_logger = RADIXUN_LOG_ROOT();
 
-#define XX(...) #__VA_ARGS__
+std::string getfile(){
+    std::ifstream ifs;
+    std::string name = "../static/hello.html";
+    radixun::FSUtil::OpenForRead(ifs , name , std::ios_base::in);
+    ifs.open(name.c_str());
+    std::stringstream ss;
+    ss << ifs.rdbuf();
+    return ss.str();
+}
 
 
 radixun::IOManager::ptr woker;
@@ -14,37 +23,27 @@ void run() {
         sleep(2);
     }
     auto sd = server->getServletDispatch();
-    sd->addServlet("/radixun/xx", [](radixun::http::HttpRequest::ptr req
+    sd->addServlet("/xx", [](radixun::http::HttpRequest::ptr req
                 ,radixun::http::HttpResponse::ptr rsp
                 ,radixun::http::HttpSession::ptr session) {
             rsp->setBody(req->toString());
             return 0;
     });
 
-    sd->addGlobServlet("/radixun/*", [](radixun::http::HttpRequest::ptr req
+    sd->addGlobServlet("/xx/*", [](radixun::http::HttpRequest::ptr req
                 ,radixun::http::HttpResponse::ptr rsp
                 ,radixun::http::HttpSession::ptr session) {
-            rsp->setBody("Glob:\r\n" + req->toString());
+            rsp->setBody(getfile());
             return 0;
     });
-
-    sd->addGlobServlet("/radixunx/xxx/*", [](radixun::http::HttpRequest::ptr req
+    sd->addServlet("/login", [](radixun::http::HttpRequest::ptr req
                 ,radixun::http::HttpResponse::ptr rsp
                 ,radixun::http::HttpSession::ptr session) {
-            rsp->setBody(XX(<html>
-        <head><title>404 Not Found</title></head>
-        <body>
-        <center><h1>404 Not Found</h1></center>
-        <hr><center>nginx/1.16.0</center>
-        </body>
-        </html>
-        <!-- a padding to disable MSIE and Chrome friendly error page -->
-        <!-- a padding to disable MSIE and Chrome friendly error page -->
-        <!-- a padding to disable MSIE and Chrome friendly error page -->
-        <!-- a padding to disable MSIE and Chrome friendly error page -->
-        <!-- a padding to disable MSIE and Chrome friendly error page -->
-        <!-- a padding to disable MSIE and Chrome friendly error page -->
-        ));
+            //数据库查找
+            rsp->setBody(req->toString());
+            RADIXUN_LOG_INFO(g_logger) << "\n" << *req;
+            auto m = req->getParams();
+            RADIXUN_LOG_INFO(g_logger) << req->getBody();
             return 0;
     });
 
@@ -55,5 +54,16 @@ int main(int argc, char** argv) {
     radixun::IOManager iom(1, true, "main");
     woker.reset(new radixun::IOManager(3, false, "worker"));
     iom.schedule(run);
+
+    // auto ur = radixun::Uri::Create("https://0.0.0.0:8020/user?username=aaa&password=acx");
+    // if(ur != nullptr){
+    //     RADIXUN_LOG_DEBUG(g_logger) << "success";
+    //     RADIXUN_LOG_DEBUG(g_logger) <<"path :"<< ur->getPath();
+    //     RADIXUN_LOG_DEBUG(g_logger) <<"host: "<< ur->getHost();
+    //     RADIXUN_LOG_DEBUG(g_logger) << "query: "<< ur->getQuery();
+    //     RADIXUN_LOG_DEBUG(g_logger) << "fg: "<< ur->getFragment();
+    // }else{
+    //     RADIXUN_LOG_DEBUG(g_logger) << "faiel";
+    // }
     return 0;
 }
