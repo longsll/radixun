@@ -1,67 +1,59 @@
 #include "radixun.h"
 
+static radixun::Logger::ptr g_logger = RADIXUN_LOG_ROOT();
 
-radixun::Logger::ptr logger = RADIXUN_LOG_ROOT();
+#define XX(...) #__VA_ARGS__
 
-const char test_request_data[] = "POST /page/xxx?id=10&v=20#fr HTTP/1.1\r\n"
-                                "Host: www.sylar.top\r\n"
-                                "Content-Length: 10\r\n\r\n"
-                                "1234567890";
 
-void test_request() {
-    radixun::http::HttpRequestParser parser;
-    std::string tmp = test_request_data;
-    size_t s = parser.execute(&tmp[0], tmp.size());
-    RADIXUN_LOG_ERROR(logger) << "execute rt=" << s
-        << "has_error=" << parser.hasError()
-        << " is_finished=" << parser.isFinished()
-        << " total=" << tmp.size()
-        << " content_length=" << parser.getContentLength();
-    tmp.resize(tmp.size() - s); //减去数据部分
+radixun::IOManager::ptr woker;
+void run() {
+    g_logger->setLevel(radixun::LogLevel::INFO);
+    radixun::http::HttpServer::ptr server(new radixun::http::HttpServer(true));
+    radixun::Address::ptr addr = radixun::Address::LookupAnyIPAddress("0.0.0.0:8020");
+    while(!server->bind(addr)) {
+        sleep(2);
+    }
+    auto sd = server->getServletDispatch();
+    sd->addServlet("/radixun/xx", [](radixun::http::HttpRequest::ptr req
+                ,radixun::http::HttpResponse::ptr rsp
+                ,radixun::http::HttpSession::ptr session) {
+            rsp->setBody(req->toString());
+            return 0;
+    });
 
-    RADIXUN_LOG_INFO(logger)  << "\n" << parser.getData()->toString();
-    RADIXUN_LOG_INFO(logger)  << "tmp\n" << tmp;
-    auto v =  parser.getData()->getParams();
-    RADIXUN_LOG_INFO(logger) << v.size();
-    auto t = parser.getData()->getHeaders();
-    RADIXUN_LOG_INFO(logger) << t.size();
-}
+    sd->addGlobServlet("/radixun/*", [](radixun::http::HttpRequest::ptr req
+                ,radixun::http::HttpResponse::ptr rsp
+                ,radixun::http::HttpSession::ptr session) {
+            rsp->setBody("Glob:\r\n" + req->toString());
+            return 0;
+    });
 
-const char test_response_data[] = "HTTP/1.1 200 OK\r\n"
-        "Date: Tue, 04 Jun 2019 15:43:56 GMT\r\n"
-        "Server: Apache\r\n"
-        "Last-Modified: Tue, 12 Jan 2010 13:48:00 GMT\r\n"
-        "ETag: \"51-47cf7e6ee8400\"\r\n"
-        "Accept-Ranges: bytes\r\n"
-        "Content-Length: 81\r\n"
-        "Cache-Control: max-age=86400\r\n"
-        "Expires: Wed, 05 Jun 2019 15:43:56 GMT\r\n"
-        "Connection: Close\r\n"
-        "Content-Type: text/html\r\n\r\n"
-        "<html>\r\n"
-        "<meta http-equiv=\"refresh\" content=\"0;url=http://www.baidu.com/\">\r\n"
-        "</html>\r\n";
+    sd->addGlobServlet("/radixunx/xxx/*", [](radixun::http::HttpRequest::ptr req
+                ,radixun::http::HttpResponse::ptr rsp
+                ,radixun::http::HttpSession::ptr session) {
+            rsp->setBody(XX(<html>
+        <head><title>404 Not Found</title></head>
+        <body>
+        <center><h1>404 Not Found</h1></center>
+        <hr><center>nginx/1.16.0</center>
+        </body>
+        </html>
+        <!-- a padding to disable MSIE and Chrome friendly error page -->
+        <!-- a padding to disable MSIE and Chrome friendly error page -->
+        <!-- a padding to disable MSIE and Chrome friendly error page -->
+        <!-- a padding to disable MSIE and Chrome friendly error page -->
+        <!-- a padding to disable MSIE and Chrome friendly error page -->
+        <!-- a padding to disable MSIE and Chrome friendly error page -->
+        ));
+            return 0;
+    });
 
-void test_response() {
-    radixun::http::HttpResponseParser parser;
-    std::string tmp = test_response_data;
-    size_t s = parser.execute(&tmp[0], tmp.size(), true);
-    RADIXUN_LOG_ERROR(logger) << "execute rt=" << s
-        << " has_error=" << parser.hasError()
-        << " is_finished=" << parser.isFinished()
-        << " total=" << tmp.size()
-        << " content_length=" << parser.getContentLength()
-        << " tmp[s]=" << tmp[s];
-
-    tmp.resize(tmp.size() - s);
-
-    RADIXUN_LOG_INFO(logger) << parser.getData()->toString();
-    RADIXUN_LOG_INFO(logger)  << "tmp\n" << tmp;
+    server->start();
 }
 
 int main(int argc, char** argv) {
-    test_request();
-    // RADIXUN_LOG_INFO(logger) << "--------------";
-    // test_response();
+    radixun::IOManager iom(1, true, "main");
+    woker.reset(new radixun::IOManager(3, false, "worker"));
+    iom.schedule(run);
     return 0;
 }
