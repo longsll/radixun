@@ -29,7 +29,7 @@
 #include "./http/http_connection.h"
 #include "./http/http_server.h"
 #include "./http/http_session.h"
-
+#include "./http/uri_query.h"
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>

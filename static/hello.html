@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录页面</title>
-    <!-- 可以添加CSS样式文件来美化界面 -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="login-container">
-        <h1>用户登录</h1>
-        <form action="/login" method="post" onsubmit="return validateForm()">
+        <form action="/user" method="post" onsubmit="return validateForm()">
             <label for="username">用户名：</label>
             <input type="text" id="username" name="username" required>
             
