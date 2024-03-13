@@ -31,6 +31,8 @@
 #include "./http/http_session.h"
 #include "./http/uri_query.h"
 
+#include "./db/mysql.h"
+
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 #include <iostream>
