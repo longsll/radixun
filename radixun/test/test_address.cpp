@@ -1,15 +1,4 @@
 #include "radixun.h"
-#include <fstream>
-#include <yaml-cpp/yaml.h>
-#include <iostream>
-#include <assert.h>
-#include <arpa/inet.h>
-#include <sys/epoll.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
 
 
 radixun::Logger::ptr logger = RADIXUN_LOG_ROOT();
@@ -47,6 +36,8 @@ void test() {
     for(auto x : vec){
         RADIXUN_LOG_INFO(logger) << x.first->toString() << " " << x.second;
     } 
+    radixun::Address::ptr addr = radixun::Address::LookupAnyIPAddress("0.0.0.0:8020");
+    RADIXUN_LOG_INFO(logger) << "0.0.0.0:8020  " << addr->toString();
 }
 
 void test_iface() {
@@ -92,8 +83,8 @@ void test_ipv6(){
 
 int main(int argc, char** argv) {
     // test_ipv4();
-    test_ipv6();
+    // test_ipv6();
     // test_iface();
-    // test();
+    test();
     return 0;
 }
