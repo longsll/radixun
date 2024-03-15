@@ -74,18 +74,8 @@ class LogEvent {
 public:
     typedef std::shared_ptr<LogEvent> ptr;
 
-        /**
-     * @brief 构造函数
-     * @param[in] logger 日志器
-     * @param[in] level 日志级别
-     * @param[in] file 文件名
-     * @param[in] line 文件行号
-     * @param[in] elapse 程序启动依赖的耗时(毫秒)
-     * @param[in] thread_id 线程id
-     * @param[in] fiber_id 协程id
-     * @param[in] time 日志事件(秒)
-     * @param[in] thread_name 线程名称
-     */
+    //构造函数
+    //elapse 程序启动依赖的耗时(毫秒)
     LogEvent(std::shared_ptr<Logger> logger , LogLevel::Level level
     ,const char* file , int32_t line , uint32_t elapse
     ,uint32_t thread_id , uint32_t fiber_id , uint64_t time
@@ -102,16 +92,10 @@ public:
     std::string getContent() const {return m_ss.str();}
     std::shared_ptr<Logger> getLogger() const {return m_logger;}
     LogLevel::Level getLevel() const {return m_level;}
-    /*
-    getSS不可加const
-    将 "std::stringstream &" 类型的引用绑定到 
-    "const std::stringstream" 类型的初始值设定项时，限定符被丢弃  
-    */
     std::stringstream& getSS() {return m_ss;}
 
     //格式化写入日志内容
     void format(const char* fmt , ...);
-
     void format(const char* fmt , va_list al);
 private:
     // 文件名
@@ -160,9 +144,7 @@ class LogFormatter {
 public:
     typedef std::shared_ptr<LogFormatter> ptr;
     /**
-     * @brief 构造函数
-     * @param[in] pattern 格式模板
-     * @details 
+     *  构造函数
      *  %m 消息
      *  %p 日志级别
      *  %r 累计毫秒数

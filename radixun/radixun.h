@@ -3,6 +3,7 @@
 
 #include "./common/log.h"
 #include "./common/config.h"
+#include "./common/mutex.h"
 #include "./common/thread.h"
 #include "./common/fiber.h"
 #include "./common/scheduler.h"

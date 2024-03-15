@@ -12,32 +12,6 @@ static thread_local std::string t_thread_name = "NUKNOW";
 
 static radixun::Logger::ptr g_logger = RADIXUN_LOG_NAME("system");
 
-//Semaphore
-
-Semaphore::Semaphore(uint32_t count){
-    if(sem_init(&m_semaphore, 0 , count)){
-        throw std::logic_error("sem_init error");
-    }
-}
-
-Semaphore::~Semaphore() {
-    sem_destroy(&m_semaphore);
-}
-
-void Semaphore::wait() {
-    if(sem_wait(&m_semaphore)) {
-        throw std::logic_error("sem_wait error");
-    }
-}
-
-void Semaphore::notify() {
-    if(sem_post(&m_semaphore)) {
-        throw std::logic_error("sme_post error");
-    }
-}
-
-// Thread
-
 Thread* Thread::GetThis() {
     return t_thread;
 }
@@ -59,7 +33,6 @@ Thread::Thread(std::function<void()>cb , const std::string& name)
         m_name = "NUKNOW";
     }
     int rt = pthread_create(&m_thread , nullptr , &Thread::run , this);
-    // std::cout << "Thread::Thread" << std::endl;
     if(rt){
         RADIXUN_LOG_ERROR(g_logger) << "pthread_create thread fail, rt=" << rt
             << " name=" << name;
@@ -75,7 +48,6 @@ Thread::~Thread() {
 }
 
 void Thread::join() {
-    // std::cout << "Thread::join" << std::endl;
     if(m_thread) {
         int rt = pthread_join(m_thread , nullptr);
         if(rt){
