@@ -16,9 +16,8 @@ namespace http {
 //Servlet封装
 class Servlet {
 public:
-    /// 智能指针类型定义
-    typedef std::shared_ptr<Servlet> ptr;
 
+    typedef std::shared_ptr<Servlet> ptr;
     Servlet(const std::string& name)
         :m_name(name) {}
     virtual ~Servlet() {}
@@ -37,7 +36,6 @@ protected:
 //函数式Servlet
 class FunctionServlet : public Servlet {
 public:
-    /// 智能指针类型定义
     typedef std::shared_ptr<FunctionServlet> ptr;
     /// 函数回调类型定义
     typedef std::function<int32_t (radixun::http::HttpRequest::ptr request
@@ -56,9 +54,9 @@ private:
 //Servlet分发器
 class ServletDispatch : public Servlet {
 public:
-    /// 智能指针类型定义
+
+
     typedef std::shared_ptr<ServletDispatch> ptr;
-    /// 读写锁类型定义
     typedef RWMutex RWMutexType;
 
     //构造函数
@@ -69,11 +67,9 @@ public:
 
     //添加servlet
     void addServlet(const std::string& uri, Servlet::ptr slt);
-    //添加servlet
     void addServlet(const std::string& uri, FunctionServlet::callback cb);
     //添加模糊匹配servlet
     void addGlobServlet(const std::string& uri, Servlet::ptr slt);
-    //添加模糊匹配servlet
     void addGlobServlet(const std::string& uri, FunctionServlet::callback cb);
     //删除servlet
     void delServlet(const std::string& uri);

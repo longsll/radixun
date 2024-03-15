@@ -11,17 +11,14 @@ namespace http {
 //HTTP请求解析类
 class HttpRequestParser {
 public:
-    /// HTTP解析类的智能指针
+
+
     typedef std::shared_ptr<HttpRequestParser> ptr;
-
     HttpRequestParser();
-
-    /**
-     * @brief 解析协议
-     * @param[in, out] data 协议文本内存
-     * @param[in] len 协议文本内存长度
-     * @return 返回实际解析的长度,并且将已解析的数据移除
-     */
+    
+    //解析协议
+    //data 协议文本内存   len 协议文本内存长度
+    //返回实际解析的长度,并且将已解析的数据移除
     size_t execute(char* data, size_t len);
     //是否解析完成
     int isFinished();
@@ -55,9 +52,8 @@ private:
 //Http响应解析结构体
  class HttpResponseParser {
 public:
-    /// 智能指针类型
-    typedef std::shared_ptr<HttpResponseParser> ptr;
 
+    typedef std::shared_ptr<HttpResponseParser> ptr;
     HttpResponseParser();
     //解析HTTP响应协议
     size_t execute(char* data, size_t len, bool chunck);

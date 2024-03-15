@@ -133,13 +133,9 @@ enum class HttpStatus {
 #undef XX
 };
 
-//将字符串方法名转成HTTP方法枚举
 HttpMethod StringToHttpMethod(const std::string& m);
-//将字符串指针转换成HTTP方法枚举
 HttpMethod CharsToHttpMethod(const char* m);
-//将HTTP方法枚举转换成字符串
 const char* HttpMethodToString(const HttpMethod& m);
-//将HTTP状态枚举转换成字符串
 const char* HttpStatusToString(const HttpStatus& s);
 
 //忽略大小写比较仿函数
@@ -147,16 +143,8 @@ struct CaseInsensitiveLess {
     bool operator()(const std::string& lhs, const std::string& rhs) const;
 };
 
-/**
- * @brief 获取Map中的key值,并转成对应类型,返回是否成功
- * @param[in] m Map数据结构
- * @param[in] key 关键字
- * @param[out] val 保存转换后的值
- * @param[in] def 默认值
- * @return
- *      @retval true 转换成功, val 为对应的值
- *      @retval false 不存在或者转换失败 val = def
- */
+//获取Map中的key值,并转成对应类型,返回是否成功
+//val 保存转换后的值 def 默认值 ,不存在或者转换失败 val = def
 template<class MapType, class T>
 bool checkGetAs(const MapType& m, const std::string& key, T& val, const T& def = T()) {
     auto it = m.find(key);
@@ -173,13 +161,7 @@ bool checkGetAs(const MapType& m, const std::string& key, T& val, const T& def =
     return false;
 }
 
-/**
- * @brief 获取Map中的key值,并转成对应类型
- * @param[in] m Map数据结构
- * @param[in] key 关键字
- * @param[in] def 默认值
- * @return 如果存在且转换成功返回对应的值,否则返回默认值
- */
+//获取Map中的key值,并转成对应类型失败返回默认值
 template<class MapType, class T>
 T getAs(const MapType& m, const std::string& key, const T& def = T()) {
     auto it = m.find(key);
@@ -202,11 +184,7 @@ public:
     typedef std::shared_ptr<HttpRequest> ptr;
     /// MAP结构
     typedef std::map<std::string, std::string, CaseInsensitiveLess> MapType;
-    /**
-     * @brief 构造函数
-     * @param[in] version 版本
-     * @param[in] close 是否keepalive
-     */
+    //构造函数(close 是否keepalive)
     HttpRequest(uint8_t version = 0x11, bool close = true);
 
     HttpMethod getMethod() const { return m_method;}
@@ -229,29 +207,17 @@ public:
     void setParams(const MapType& v) { m_params = v;}
     void setCookies(const MapType& v) { m_cookies = v;}
 
-    //获取HTTP请求的头部参数(如果存在则返回对应值,否则返回默认值)
     std::string getHeader(const std::string& key, const std::string& def = "") const;
-    //获取HTTP请求的请求参数
     std::string getParam(const std::string& key, const std::string& def = "") const;
-    //获取HTTP请求的Cookie参数
     std::string getCookie(const std::string& key, const std::string& def = "") const;
-    //设置HTTP请求的头部参数
     void setHeader(const std::string& key, const std::string& val);
-    //设置HTTP请求的请求参数
     void setParam(const std::string& key, const std::string& val);
-    //设置HTTP请求的Cookie参数
     void setCookie(const std::string& key, const std::string& val);
-    //删除HTTP请求的头部参数
     void delHeader(const std::string& key);
-    //删除HTTP请求的请求参数
     void delParam(const std::string& key);
-    //删除HTTP请求的Cookie参数
     void delCookie(const std::string& key);
-    //判断HTTP请求的头部参数是否存在(如果存在,val非空则赋值)
     bool hasHeader(const std::string& key, std::string* val = nullptr);
-    //判断HTTP请求的请求参数是否存在
     bool hasParam(const std::string& key, std::string* val = nullptr);
-    //判断HTTP请求的Cookie参数是否存在
     bool hasCookie(const std::string& key, std::string* val = nullptr);
 
     //检查并获取HTTP请求的头部参数
@@ -285,9 +251,7 @@ public:
         return getAs(m_headers, key, def);
     }
 
-    //序列化输出到流中
     std::ostream& dump(std::ostream& os) const;
-    //转成字符串类型
     std::string toString() const;
 private:
     /// HTTP方法
@@ -312,20 +276,11 @@ private:
     MapType m_cookies;
 };
 
-/**
- * @brief HTTP响应结构体
- */
+//HTTP响应结构体
 class HttpResponse {
 public:
-    /// HTTP响应结构智能指针
     typedef std::shared_ptr<HttpResponse> ptr;
-    /// MapType
     typedef std::map<std::string, std::string, CaseInsensitiveLess> MapType;
-    /**
-     * @brief 构造函数
-     * @param[in] version 版本
-     * @param[in] close 是否自动关闭
-     */
     HttpResponse(uint8_t version = 0x11, bool close = true);
 
     HttpStatus getStatus() const { return m_status;}
@@ -355,9 +310,7 @@ public:
         return getAs(m_headers, key, def);
     }
 
-    //序列化输出到流
     std::ostream& dump(std::ostream& os) const;
-    //转成字符串
     std::string toString() const;
 private:
     /// 响应状态
@@ -374,9 +327,7 @@ private:
     MapType m_headers;
 };
 
-//流式输出HttpRequest
 std::ostream& operator<<(std::ostream& os, const HttpRequest& req);
-//流式输出HttpResponse
 std::ostream& operator<<(std::ostream& os, const HttpResponse& rsp);
 
 }

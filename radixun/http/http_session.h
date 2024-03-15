@@ -12,7 +12,6 @@ namespace http {
 // 接收请求报文，发送响应报文
 class HttpSession : public SocketStream {
 public:
-    /// 智能指针类型定义
     typedef std::shared_ptr<HttpSession> ptr;
 
     //构造函数(owner 是否托管)
