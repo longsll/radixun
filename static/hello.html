@@ -9,16 +9,14 @@
 <body>
     <div class="login-container">
         <form action="/user" method="post" onsubmit="return validateForm()">
-            <label for="username">用户名：</label>
-            <input type="text" id="username" name="username" required>
+            <label for="use">用户名：</label>
+            <input type="text" id="use" name="use" required>
             
-            <label for="password">密码：</label>
-            <input type="password" id="password" name="password" required>
+            <label for="pwd">密码：</label>
+            <input type="password" id="pwd" name="pwd" required>
 
             <button type="submit">登录</button>
-            
-            <!-- 可选：忘记密码链接 -->
-            <!-- <a href="/forgot-password">忘记密码？</a> -->
+        
         </form>
         
     </div>

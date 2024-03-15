@@ -14,11 +14,9 @@ namespace radixun {
 class TcpServer : public std::enable_shared_from_this<TcpServer> , Noncopyable {
 public:
     typedef std::shared_ptr<TcpServer> ptr;
-    /**
-     * @brief 构造函数
-     * @param[in] woker socket客户端工作的协程调度器
-     * @param[in] accept_woker 服务器socket执行接收socket连接的协程调度器
-     */
+    //构造函数
+    //socket客户端工作的协程调度器
+    //服务器socket执行接收socket连接的协程调度器
     TcpServer(radixun::IOManager* woker = radixun::IOManager::GetThis()
               ,radixun::IOManager* accept_woker = radixun::IOManager::GetThis());
     virtual ~TcpServer();
@@ -30,15 +28,12 @@ public:
     virtual bool start();
     //停止服务
     virtual void stop();
-    //返回读取超时时间(毫秒)
-    uint64_t getRecvTimeout() const { return m_recvTimeout;}
-    //返回服务器名称
-    std::string getName() const { return m_name;}
-    //设置读取超时时间(毫秒)
-    void setRecvTimeout(uint64_t v) { m_recvTimeout = v;}
-    //设置服务器名称
+
+    
     void setName(const std::string& v) { m_name = v;}
-    //是否停止
+    std::string getName() const { return m_name;}
+    void setRecvTimeout(uint64_t v) { m_recvTimeout = v;}
+    uint64_t getRecvTimeout() const { return m_recvTimeout;}
     bool isStop() const { return m_isStop;}
 
 protected:

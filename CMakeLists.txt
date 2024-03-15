@@ -13,11 +13,14 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) #输出文件路径
 aux_source_directory (./radixun/common RADIXUN_COMMON_LIST) #添加编译路径
 aux_source_directory (./radixun/http RADIXUN_HTTP_LIST)
 aux_source_directory (./radixun/net RADIXUN_NET_LIST)
+aux_source_directory (./radixun/db RADIXUN_DB_LIST)
 
 
 #find yaml package
 find_package(yaml-cpp REQUIRED)
 include_directories(${YAML_CPP_INCLUDE_DIR})
-add_executable (main ./radixun/main.cpp ${RADIXUN_COMMON_LIST} ${RADIXUN_HTTP_LIST} ${RADIXUN_NET_LIST}) #连接编译编译路径
+add_executable (main ./radixun/main.cpp ${RADIXUN_COMMON_LIST} ${RADIXUN_HTTP_LIST} ${RADIXUN_NET_LIST} ${RADIXUN_DB_LIST}) #连接编译编译路径
 #动态连接yaml库
 target_link_libraries(main yaml-cpp::yaml-cpp)
+#连接mysql库
+target_link_libraries(main -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lzstd -lssl -lcrypto -lresolv -lm)
