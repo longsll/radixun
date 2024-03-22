@@ -7,7 +7,7 @@
 #include "fd_manager.h"
 #include "macro.h"
 
-radixun::Logger::ptr g_logger = RADIXUN_LOG_NAME("system");
+radixun::Logger::ptr h_logger = RADIXUN_LOG_NAME("system");
 
 namespace radixun {
 
@@ -57,7 +57,7 @@ struct _HookIniter {
         s_connect_timeout = g_tcp_connect_timeout->getValue();
 
         g_tcp_connect_timeout->addListener([](const int& old_value, const int& new_value){
-                RADIXUN_LOG_INFO(g_logger) << "tcp connect timeout changed from "
+                RADIXUN_LOG_INFO(h_logger) << "tcp connect timeout changed from "
                                          << old_value << " to " << new_value;
                 s_connect_timeout = new_value;
         });
@@ -127,7 +127,7 @@ retry:
 
         int rt = iom->addEvent(fd, (radixun::IOManager::Event)(event));
         if(RADIXUN_UNLICKLY(rt)) {
-            RADIXUN_LOG_ERROR(g_logger) << hook_fun_name << " addEvent("
+            RADIXUN_LOG_ERROR(h_logger) << hook_fun_name << " addEvent("
                 << fd << ", " << event << ")";
             if(timer) {
                 timer->cancel();
@@ -264,7 +264,7 @@ int connect_with_timeout(int fd, const struct sockaddr* addr, socklen_t addrlen,
         if(timer) {
             timer->cancel();
         }
-        RADIXUN_LOG_ERROR(g_logger) << "connect addEvent(" << fd << ", WRITE) error";
+        RADIXUN_LOG_ERROR(h_logger) << "connect addEvent(" << fd << ", WRITE) error";
     }
 
     int error = 0;

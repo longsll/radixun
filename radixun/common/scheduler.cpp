@@ -16,23 +16,20 @@ static thread_local Fiber* t_scheduler_fiber = nullptr;
 Scheduler::Scheduler(size_t threads , bool use_caller , const std::string& name)
     :m_name(name)
 {
-    // RADIXUN_LOG_DEBUG(g_logger) << "Scheduler()";
     RADIXUN_ASSERT(threads > 0);
 
     if(use_caller){
+        //主线程的主协程
         radixun::Fiber::GetThis();
         -- threads;
-
         RADIXUN_ASSERT(GetThis() == nullptr);
         t_scheduler = this;
-
+        //调度协程
         m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run , this) , 0 , true));
         radixun::Thread::SetName(m_name);
-
         t_scheduler_fiber = m_rootFiber.get();
         m_rootThread = radixun::GetThreadId();
         m_threadIds.push_back(m_rootThread);
-
     }else{
         m_rootThread = -1;
     }
@@ -40,7 +37,6 @@ Scheduler::Scheduler(size_t threads , bool use_caller , const std::string& name)
 }
 
 Scheduler::~Scheduler() {
-    RADIXUN_LOG_INFO(g_logger) << "~Scheduler";
     RADIXUN_ASSERT(m_stopping);
     if(GetThis() == this) {
         t_scheduler = nullptr;
@@ -57,30 +53,25 @@ Fiber* Scheduler::GetMainFiber(){
 
 void Scheduler::start() {
     MutexType::Lock lock(m_mutex);
-    if(!m_stopping){
-        return ;
-    }
+    if(!m_stopping){return ;}
     m_stopping = false;
     RADIXUN_ASSERT(m_threads.empty());
-
     m_threads.resize(m_threadCount);
+
     for(size_t i = 0 ; i < m_threadCount ; i++){
         m_threads[i].reset(new Thread(std::bind(&Scheduler::run , this)
         , m_name + "_" + std::to_string(i)));
         m_threadIds.push_back(m_threads[i]->getId());
     }
-    // RADIXUN_LOG_DEBUG(g_logger) << "start()";
     lock.unlock();
 }
 
 void Scheduler::stop() {
-    RADIXUN_LOG_DEBUG(g_logger) << "stop";
+    // RADIXUN_LOG_DEBUG(g_logger) << "stop";
     m_autoStop = true;
-    if(m_rootFiber && m_threadCount == 0
-    && (m_rootFiber->getState() == Fiber::TERM || m_rootFiber->getState() == Fiber::INIT)){
-        RADIXUN_LOG_INFO(g_logger) << this << " stopped";
+    if(m_rootFiber && m_threadCount == 0 && (m_rootFiber->getState() == Fiber::TERM || m_rootFiber->getState() == Fiber::INIT)){
+        // RADIXUN_LOG_INFO(g_logger) << this << " stopped";
         m_stopping = true;
-
         if(stopping()){
             return ;
         }
@@ -93,7 +84,6 @@ void Scheduler::stop() {
     }
     m_stopping = true;
     for(size_t i = 0 ; i < m_threadCount ; i ++){
-        // RADIXUN_LOG_DEBUG(g_logger) << "stop to tick other";
         tickle();
     }
 
@@ -103,7 +93,7 @@ void Scheduler::stop() {
     /// 在use caller情况下，调度器协程结束时，应该返回caller协程
     if(m_rootFiber){
         if(!stopping()){
-            RADIXUN_LOG_DEBUG(g_logger) << "tocall";
+            // RADIXUN_LOG_DEBUG(g_logger) << "tocall";
             m_rootFiber->call();
         }
     }
@@ -133,49 +123,46 @@ void Scheduler::run() {
     Fiber::ptr idle_fiber(new Fiber(std::bind(&Scheduler::idle ,this)));
     //要执行的任务协程
     Fiber::ptr cb_fiber;
-    //调度任务
+    //ft为要执行的任务
     FiberAndThread ft;
 
     while(true){
         ft.reset();
         //是否有任务到来
         bool tickle_me = false;
+        //当前线程是否活跃
         bool is_active = false;
+
+        //取任务
         {
             MutexType::Lock lock(m_mutex);
             auto it = m_fibers.begin();
             while(it != m_fibers.end()){
-                // 指定了调度线程，但不是在当前线程上调度，标记一下需要通知其他线程进行调度，然后跳过这个任务，继续下一个
                 if(it-> thread != -1 && it->thread != radixun::GetThreadId()){
                     ++it;
                     tickle_me = true;
                     continue;
                 }
-                // 找到一个未指定线程，或是指定了当前线程的任务
                 RADIXUN_ASSERT(it->fiber || it->cb);
                 if(it->fiber && it->fiber->getState() == Fiber::EXEC) {
                     ++it;
                     continue;
                 }
-                //ft为要执行的任务
                 ft = *it;
                 m_fibers.erase(it);
                 ++m_activeThreadCount;
                 is_active = true;
-                // RADIXUN_LOG_DEBUG(g_logger) << "add" << m_activeThreadCount;
                 break;
             }
         }
 
-        if(tickle_me){
-            // RADIXUN_LOG_DEBUG(g_logger) << "run to tick other";
-            tickle();
-        }
+        if(tickle_me){tickle();}
+
+        //做任务
         if(ft.fiber && (ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT)){
             // resume协程，resume返回时，协程要么执行完了，要么半路yield了，总之这个任务就算完成了，活跃线程数减一
             ft.fiber->swapIn();
             --m_activeThreadCount;
-            // RADIXUN_LOG_DEBUG(g_logger) << "sub1" << m_activeThreadCount;
             if(ft.fiber->getState() == Fiber::READY) {
                 schedule(ft.fiber);
             }else if(ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT){
@@ -202,20 +189,16 @@ void Scheduler::run() {
                 cb_fiber.reset();
             }
         }else{
-            // RADIXUN_LOG_DEBUG(g_logger) << "go idle";
-            // 进到这个分支情况一定是任务队列空了，调度idle协程即可
-            // RADIXUN_LOG_DEBUG(g_logger) << "run empty";
+            // 任务队列空了，调度idle协程
             if(is_active) {
                 -- m_activeThreadCount;
-                // RADIXUN_LOG_DEBUG(g_logger) << "sub3" << m_activeThreadCount;
                 continue;
             }
-            // 如果调度器没有调度任务，那么idle协程会不停地resume/yield，不会结束，如果idle协程结束了，那一定是调度器停止了
+            // 不停地resume/yield
             if(idle_fiber->getState() == Fiber::TERM){
                 RADIXUN_LOG_INFO(g_logger) << "idle fiber term";
                 break;
             }
-
             ++ m_idleThreadCount;
             idle_fiber->swapIn();
             --m_idleThreadCount;
@@ -236,7 +219,6 @@ bool Scheduler::stopping() {
 }
 
 void Scheduler::idle() {
-    RADIXUN_LOG_INFO(g_logger) << "idle";
     while(!stopping()){
         radixun::Fiber::YieldToHold();
     }

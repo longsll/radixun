@@ -11,37 +11,26 @@ static Logger::ptr g_logger = RADIXUN_LOG_NAME("system");
 
 /// 全局静态变量，用于生成协程id
 static std::atomic<uint64_t> s_fiber_id {0};
-
 /// 全局静态变量，用于统计当前的协程数
 static std::atomic<uint64_t> s_fiber_count {0};
-
 /// 线程局部变量，当前线程正在运行的协程
 static thread_local Fiber* t_fiber = nullptr;
-
 /// 线程局部变量，当前线程的主协程，切换到这个协程，就相当于切换到了主线程中运行，智能指针形式
 static thread_local Fiber::ptr t_threadFiber = nullptr;
-
 static ConfigVar<uint32_t>::ptr g_fiber_stack_size = 
     Config::Lookup<uint32_t>("fiber.stack_size" , 128*1024 , "fiber stack size");
 
 //malloc封装
 class MallocStackAllocator{
 public:
-    static void* Alloc(size_t size){
-        return malloc(size);
-    }
-
-    static void Delloc(void* vp , size_t size){
-        return free(vp);
-    }
+    static void* Alloc(size_t size){return malloc(size);}
+    static void Delloc(void* vp , size_t size){return free(vp);}
 };
 
 using StackAllocator = MallocStackAllocator;
 
 uint64_t Fiber::GetFiberId() {
-    if(t_fiber){
-        return t_fiber ->getId();
-    }
+    if(t_fiber){return t_fiber ->getId();}
     return 0;
 }
 
@@ -52,11 +41,8 @@ Fiber::Fiber() {
     if(getcontext(&m_ctx)){
         RADIXUN_ASSERT2(false , "getcontext");
     }
-
     ++s_fiber_count;
-
     RADIXUN_LOG_DEBUG(g_logger) << "Fiber::fiber()";
-
 }
 
 Fiber::Fiber(std::function<void()> cb , size_t stacksize , bool use_caller)
@@ -75,10 +61,10 @@ Fiber::Fiber(std::function<void()> cb , size_t stacksize , bool use_caller)
     m_ctx.uc_stack.ss_sp = m_stack;
     m_ctx.uc_stack.ss_size = m_stacksize;
 
-    if(!use_caller){
-        makecontext(&m_ctx , &Fiber::MainFunc , 0);
-    }else{
+    if(use_caller){
         makecontext(&m_ctx , &Fiber::CallerMainFunc , 0);
+    }else{
+        makecontext(&m_ctx , &Fiber::MainFunc , 0);
     }
 
     RADIXUN_LOG_DEBUG(g_logger) << "Fiber::Fiber id = " << m_id;
@@ -120,7 +106,6 @@ void Fiber::reset(std::function<void()> cb) {
 void Fiber::call() {
     SetThis(this);
     m_state = EXEC;
-    RADIXUN_LOG_ERROR(g_logger) << "call:"<< getId();
     if(swapcontext(&t_threadFiber->m_ctx , &m_ctx)){
         RADIXUN_ASSERT2(false , "call:swapcontext");
     }
@@ -133,7 +118,6 @@ void Fiber::back() {
     }
 }
 
-// swapIN
 void Fiber::swapIn() {
     SetThis(this);
     RADIXUN_ASSERT(m_state != EXEC);
@@ -143,7 +127,6 @@ void Fiber::swapIn() {
     }
 }
 
-// swapOut
 void Fiber::swapOut() {
     SetThis(Scheduler::GetMainFiber());
     if(swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx)) {
@@ -165,7 +148,6 @@ Fiber::ptr Fiber::GetThis() {
     return t_fiber->shared_from_this();
 }
 
-// YieldToReady
 void Fiber::YieldToReady() {
     Fiber::ptr cur = GetThis();
     RADIXUN_ASSERT(cur->m_state == EXEC);
@@ -173,7 +155,6 @@ void Fiber::YieldToReady() {
     cur->swapOut();
 }
 
-// YieldToHold
 void Fiber::YieldToHold() {
     Fiber::ptr cur = GetThis();
     RADIXUN_ASSERT(cur->m_state == EXEC);
@@ -210,8 +191,6 @@ void Fiber::MainFunc() {
     auto raw_ptr = cur.get();
     cur.reset();
     raw_ptr->swapOut();
-    // raw_ptr->back();
-
     RADIXUN_ASSERT2(false, "never reach fiber_id= "+ std::to_string(raw_ptr->getId()));
 }
 
@@ -240,8 +219,6 @@ void Fiber::CallerMainFunc() {
     auto raw_ptr = cur.get();
     cur.reset();
     raw_ptr->back();
-    // raw_ptr->swapOut();
-
     RADIXUN_ASSERT2(false, "never reach fiber_id= "+ std::to_string(raw_ptr->getId()));
 }
 

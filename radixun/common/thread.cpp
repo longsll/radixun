@@ -33,11 +33,13 @@ Thread::Thread(std::function<void()>cb , const std::string& name)
         m_name = "NUKNOW";
     }
     int rt = pthread_create(&m_thread , nullptr , &Thread::run , this);
+    
     if(rt){
         RADIXUN_LOG_ERROR(g_logger) << "pthread_create thread fail, rt=" << rt
             << " name=" << name;
         throw std::logic_error("pthread_create error");
     }
+    // RADIXUN_LOG_INFO(g_logger) << "start wait";
     m_semaphore.wait();
 }
 
@@ -72,7 +74,7 @@ void* Thread::run(void* arg){
     //防止智能指针引用不被释放
     std::function<void()>cb;
     cb.swap(thread->m_cb);
-
+    // RADIXUN_LOG_INFO(g_logger) << "notify";
     thread->m_semaphore.notify();
 
     cb();

@@ -1,72 +1,39 @@
 #include "radixun.h"
 
-static radixun::Logger::ptr g_logger = RADIXUN_LOG_ROOT();
-#define XX(...) #__VA_ARGS__
+radixun::Logger::ptr g_logger = RADIXUN_LOG_ROOT();
 
-std::string getfile(){
-    std::ifstream ifs;
-    std::string name = "../static/hello.html";
-    radixun::FSUtil::OpenForRead(ifs , name , std::ios_base::in);
-    ifs.open(name.c_str());
-    std::stringstream ss;
-    ss << ifs.rdbuf();
-    return ss.str();
-}
+void test_fiber() {
+    static int s_count = 1;
+    RADIXUN_LOG_INFO(g_logger) << "test in fiber s_count=" << s_count;
 
-
-radixun::IOManager::ptr woker;
-radixun::mysql_db::ptr sq;
-void run() {
-    
-    g_logger->setLevel(radixun::LogLevel::INFO);
-    radixun::http::HttpServer::ptr server(new radixun::http::HttpServer(true));
-    radixun::Address::ptr addr = radixun::Address::LookupAnyIPAddress("0.0.0.0:8020");
-    while(!server->bind(addr)) {
-        sleep(2);
+    // sleep(1);
+    if(--s_count >= 0) {
+        radixun::Scheduler::GetThis()->schedule(&test_fiber, radixun::GetThreadId());
     }
-    auto sd = server->getServletDispatch();
-    sd->addServlet("/xx", [](radixun::http::HttpRequest::ptr req
-                ,radixun::http::HttpResponse::ptr rsp
-                ,radixun::http::HttpSession::ptr session) {
-            rsp->setBody(req->toString());
-            return 0;
-    });
-
-    sd->addGlobServlet("/login", [](radixun::http::HttpRequest::ptr req
-                ,radixun::http::HttpResponse::ptr rsp
-                ,radixun::http::HttpSession::ptr session) {
-            rsp->setBody(getfile());
-            return 0;
-    });
-
-    sd->addServlet("/user", [](radixun::http::HttpRequest::ptr req
-                ,radixun::http::HttpResponse::ptr rsp
-                ,radixun::http::HttpSession::ptr session) {
-            //search
-            std::string pon;
-            auto q = radixun::Query::parse(req->getBody());
-            sq->setTable("users");
-            std::vector<std::string> key;
-            key.push_back("use");
-            key.push_back("pwd");
-            auto qq = radixun::Query::parse(radixun::Query::Decode(q->dump()));
-            pon = sq->do_sql(sq->query_eq(sq->getTable() , key , qq->getmap()));
-            if(pon.size() == 0)pon = "no user";
-            rsp->setBody(pon);
-            return 0;
-    });
-
-    server->start();
-
-
 }
 
 
+void test_fiber2() {
+    static int s_count = 1;
+    RADIXUN_LOG_INFO(g_logger) << "test in fiber2 s_count=" << s_count;
 
-int main(int argc, char** argv) {
-    sq.reset(new radixun::mysql_db("localhost" , 3306 , "root" , "123456" , "test_databace"));
-    radixun::IOManager iom(1, true, "main");
-    woker.reset(new radixun::IOManager(3, false, "worker"));
-    iom.schedule(run);
+    // sleep(1);
+    if(--s_count >= 0) {
+        radixun::Scheduler::GetThis()->schedule(&test_fiber2, radixun::GetThreadId());
+    }
+}
+
+int main()
+{
+    RADIXUN_LOG_INFO(g_logger) << "main star";
+    radixun::Scheduler sc(1 , false , "test");
+    sc.start();
+    // sleep(2);
+    RADIXUN_LOG_INFO(g_logger) << "main scheduler";
+    sc.schedule(&test_fiber);
+    sc.schedule(&test_fiber2);
+    sc.stop();
+    while(1);
+    RADIXUN_LOG_INFO(g_logger) << "over";
     return 0;
 }

@@ -43,7 +43,6 @@ private:
     std::string m_name;
     //信号量
     Semaphore m_semaphore;
-
 };
 
 }
