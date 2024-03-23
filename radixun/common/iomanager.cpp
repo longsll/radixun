@@ -34,9 +34,11 @@ void IOManager::FdContext::triggerEvent(IOManager::Event event){
     RADIXUN_ASSERT(events& event);
     events = (Event)(events & ~event);
     EventContext& ctx = getContext(event);
+    RADIXUN_LOG_DEBUG(g_logger) << "tigger :" << event;
     if(ctx.cb){
         ctx.scheduler->schedule(&ctx.cb);
     }else{
+
         ctx.scheduler->schedule(&ctx.fiber);
     }
     ctx.scheduler = nullptr;
@@ -82,6 +84,7 @@ IOManager::~IOManager(){
 }
 
 int IOManager::addEvent(int fd , Event event , std::function<void()> cb){
+    RADIXUN_LOG_INFO(g_logger) << "add " << event;
     // 找到fd对应的FdContext，如果不存在，那就分配一个
     FdContext* fd_ctx = nullptr;
     RWMutexType::ReadLock lock(m_mutex);
@@ -120,7 +123,6 @@ int IOManager::addEvent(int fd , Event event , std::function<void()> cb){
     fd_ctx->events = (Event)(fd_ctx->events | event);
     FdContext::EventContext& event_ctx = fd_ctx->getContext(event);
     RADIXUN_ASSERT(!event_ctx.scheduler&& !event_ctx.fiber && !event_ctx.cb);
-    // 对EventContext赋值scheduler和回调函数，如果回调函数为空，则把当前协程当成回调执行体
     event_ctx.scheduler = Scheduler::GetThis();
     if(cb) {
         event_ctx.cb.swap(cb);
@@ -144,7 +146,6 @@ bool IOManager::delEvent(int fd , Event event){
     if(!(fd_ctx->events & event)){//原本就没事件
         return false;
     }
-
     // 清除指定的事件，表示不关心这个事件了，如果清除之后结果为0，则从epoll_wait中删除该文件描述符
     Event new_events = (Event)(fd_ctx->events & ~event);//把事件从原本里面去掉
     int op = new_events ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
@@ -271,6 +272,7 @@ bool IOManager::stopping() {
 }
 
 void IOManager::idle() {
+    RADIXUN_LOG_INFO(g_logger) << "idle" ;
     epoll_event* events = new epoll_event[64]();
     std::shared_ptr<epoll_event> shared_events(events, [](epoll_event* ptr){delete[] ptr;});
  
@@ -285,17 +287,13 @@ void IOManager::idle() {
         do {
             static const int MAX_TIMEOUT = 3000;
             if(next_timeout != ~0ull) {
-                next_timeout = (int)next_timeout > MAX_TIMEOUT
-                                ? MAX_TIMEOUT : next_timeout;
+                next_timeout = (int)next_timeout > MAX_TIMEOUT ? MAX_TIMEOUT : next_timeout;
             } else {
                 next_timeout = MAX_TIMEOUT;
             }
             rt = epoll_wait(m_epfd, events, 64, (int)next_timeout);
-            if(rt < 0 && errno == EINTR) {
-            } else {
-                if(rt == 0)RADIXUN_LOG_DEBUG(g_logger) << "epoll_wait end";
-                break;
-            }
+            if(rt < 0 && errno == EINTR) {}
+            else {break;}
         } while(true);
  
         std::vector<std::function<void()> > cbs;
@@ -304,6 +302,7 @@ void IOManager::idle() {
             schedule(cbs.begin(), cbs.end());
             cbs.clear();
         }
+        RADIXUN_LOG_INFO(g_logger) << "wait rt " << rt ;
         // 遍历所有发生的事件，根据epoll_event的私有指针找到对应的FdContext，进行事件处理
         for (int i = 0; i < rt; ++i) {
             epoll_event& event = events[i];
@@ -325,6 +324,8 @@ void IOManager::idle() {
             if (event.events & EPOLLOUT) {
                 real_events |= WRITE;
             }
+            RADIXUN_LOG_INFO(g_logger) << "wait m_events " << fd_ctx->events;
+            RADIXUN_LOG_INFO(g_logger) << "wait real_events " << real_events ;
             if ((fd_ctx->events & real_events) == NONE) {
                 continue;
             }

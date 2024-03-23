@@ -70,7 +70,7 @@ void TcpServer::startAccept(Socket::ptr sock) {
     while(!m_isStop) {
         Socket::ptr client = sock->accept();
         if(client) {
-            // RADIXUN_LOG_INFO(g_logger) << "acceptd" ;
+            RADIXUN_LOG_INFO(g_logger) << "acceptd" ;
             client->setRecvTimeout(m_recvTimeout);
             m_worker->schedule(std::bind(&TcpServer::handleClient,
                         shared_from_this(), client));

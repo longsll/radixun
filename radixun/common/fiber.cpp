@@ -42,7 +42,7 @@ Fiber::Fiber() {
         RADIXUN_ASSERT2(false , "getcontext");
     }
     ++s_fiber_count;
-    RADIXUN_LOG_DEBUG(g_logger) << "Fiber::fiber()";
+    // RADIXUN_LOG_DEBUG(g_logger) << "Fiber::fiber()";
 }
 
 Fiber::Fiber(std::function<void()> cb , size_t stacksize , bool use_caller)
@@ -67,7 +67,7 @@ Fiber::Fiber(std::function<void()> cb , size_t stacksize , bool use_caller)
         makecontext(&m_ctx , &Fiber::MainFunc , 0);
     }
 
-    RADIXUN_LOG_DEBUG(g_logger) << "Fiber::Fiber id = " << m_id;
+    // RADIXUN_LOG_DEBUG(g_logger) << "Fiber::Fiber id = " << m_id;
 }
 
 Fiber::~Fiber() {
@@ -84,7 +84,7 @@ Fiber::~Fiber() {
             SetThis(nullptr);
         }
     }
-    RADIXUN_LOG_DEBUG(g_logger) << "Fiber::~Fiber id= " << m_id;
+    // RADIXUN_LOG_DEBUG(g_logger) << "Fiber::~Fiber id= " << m_id;
 }
 
 

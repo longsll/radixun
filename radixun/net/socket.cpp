@@ -153,7 +153,6 @@ bool Socket::connect(const Address::ptr addr, uint64_t timeout_ms) {
             return false;
         }
     }
-
     if(RADIXUN_UNLICKLY(addr->getFamily() != m_family)) {
         RADIXUN_LOG_ERROR(g_logger) << "connect sock.family("
             << m_family << ") addr.family(" << addr->getFamily()
