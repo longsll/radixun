@@ -84,7 +84,6 @@ IOManager::~IOManager(){
 }
 
 int IOManager::addEvent(int fd , Event event , std::function<void()> cb){
-    RADIXUN_LOG_INFO(g_logger) << "add " << event;
     // 找到fd对应的FdContext，如果不存在，那就分配一个
     FdContext* fd_ctx = nullptr;
     RWMutexType::ReadLock lock(m_mutex);
@@ -302,7 +301,7 @@ void IOManager::idle() {
             schedule(cbs.begin(), cbs.end());
             cbs.clear();
         }
-        RADIXUN_LOG_INFO(g_logger) << "wait rt " << rt ;
+        // RADIXUN_LOG_INFO(g_logger) << "wait rt " << rt ;
         // 遍历所有发生的事件，根据epoll_event的私有指针找到对应的FdContext，进行事件处理
         for (int i = 0; i < rt; ++i) {
             epoll_event& event = events[i];
@@ -324,8 +323,6 @@ void IOManager::idle() {
             if (event.events & EPOLLOUT) {
                 real_events |= WRITE;
             }
-            RADIXUN_LOG_INFO(g_logger) << "wait m_events " << fd_ctx->events;
-            RADIXUN_LOG_INFO(g_logger) << "wait real_events " << real_events ;
             if ((fd_ctx->events & real_events) == NONE) {
                 continue;
             }

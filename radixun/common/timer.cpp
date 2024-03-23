@@ -25,8 +25,7 @@ bool Timer::Comparator::operator()(const Timer::ptr& lhs,const Timer::ptr& rhs) 
     return lhs.get() < rhs.get();
 }
 
-Timer::Timer(uint64_t ms, std::function<void()> cb,
-             bool recurring, TimerManager* manager)
+Timer::Timer(uint64_t ms, std::function<void()> cb, bool recurring, TimerManager* manager)
     :m_recurring(recurring)
     ,m_ms(ms)
     ,m_cb(cb)
@@ -39,7 +38,6 @@ Timer::Timer(uint64_t next)
 }
 
 bool Timer::cancel() {
-    // RADIXUN_LOG_DEBUG(g_logger) << "cancel timer";
     TimerManager::RWMutexType::WriteLock lock(m_manager->m_mutex);
     if(m_cb) {
         m_cb = nullptr;
@@ -51,7 +49,6 @@ bool Timer::cancel() {
 }
 
 bool Timer::refresh() {
-    // RADIXUN_LOG_DEBUG(g_logger) << "refresh timer";
     TimerManager::RWMutexType::WriteLock lock(m_manager->m_mutex);
     if(!m_cb) {
         return false;
@@ -67,7 +64,6 @@ bool Timer::refresh() {
 }
 
 bool Timer::reset(uint64_t ms, bool from_now) {
-    RADIXUN_LOG_DEBUG(g_logger) << "reset timer";
     if(ms == m_ms && !from_now) {
         return true;
     }
@@ -100,29 +96,21 @@ TimerManager::TimerManager() {
 TimerManager::~TimerManager() {
 }
 
-Timer::ptr TimerManager::addTimer(uint64_t ms, std::function<void()> cb
-                                  ,bool recurring) {
-    RADIXUN_LOG_DEBUG(g_logger) << "addTime";
+Timer::ptr TimerManager::addTimer(uint64_t ms, std::function<void()> cb ,bool recurring) {
     Timer::ptr timer(new Timer(ms, cb, recurring, this));
     RWMutexType::WriteLock lock(m_mutex);
     addTimer(timer, lock);
     return timer;
 }
 
-/*
-weak_cond是一个weak_ptr类型的对象，通过调用它的lock()方法可以得到一个shared_ptr类型的对象tmp，
-如果weak_ptr已经失效，则lock()方法返回一个空的shared_ptr对象 
-*/
 static void OnTimer(std::weak_ptr<void> weak_cond, std::function<void()> cb) {
+    //如果weak对象还存在就执行
     std::shared_ptr<void> tmp = weak_cond.lock();
-    if(tmp) {
-        cb();
-    }
+    if(tmp) {cb();}
 }
 
 Timer::ptr TimerManager::addConditionTimer(uint64_t ms, std::function<void()> cb
-                                    ,std::weak_ptr<void> weak_cond
-                                    ,bool recurring) {
+                                    ,std::weak_ptr<void> weak_cond,bool recurring) {
     return addTimer(ms, std::bind(&OnTimer, weak_cond, cb), recurring);
 }
 
@@ -132,7 +120,6 @@ uint64_t TimerManager::getNextTimer() {
     if(m_timers.empty()) {
         return ~0ull;
     }
-
     const Timer::ptr& next = *m_timers.begin();
     uint64_t now_ms = radixun::GetCurrentMS();
     if(now_ms >= next->m_next) {
@@ -187,7 +174,6 @@ void TimerManager::addTimer(Timer::ptr val, RWMutexType::WriteLock& lock) {
         m_tickled = true;
     }
     lock.unlock();
-
     if(at_front) {
         onTimerInsertedAtFront();
     }
@@ -195,8 +181,7 @@ void TimerManager::addTimer(Timer::ptr val, RWMutexType::WriteLock& lock) {
 
 bool TimerManager::detectClockRollover(uint64_t now_ms) {
     bool rollover = false;
-    if(now_ms < m_previouseTime &&
-            now_ms < (m_previouseTime - 60 * 60 * 1000)) {
+    if(now_ms < m_previouseTime && now_ms < (m_previouseTime - 60 * 60 * 1000)) {
         rollover = true;
     }
     m_previouseTime = now_ms;
