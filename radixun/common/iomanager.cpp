@@ -34,7 +34,7 @@ void IOManager::FdContext::triggerEvent(IOManager::Event event){
     RADIXUN_ASSERT(events& event);
     events = (Event)(events & ~event);
     EventContext& ctx = getContext(event);
-    RADIXUN_LOG_DEBUG(g_logger) << "tigger :" << event;
+    // RADIXUN_LOG_DEBUG(g_logger) << "tigger :" << event;
     if(ctx.cb){
         ctx.scheduler->schedule(&ctx.cb);
     }else{
@@ -271,7 +271,7 @@ bool IOManager::stopping() {
 }
 
 void IOManager::idle() {
-    RADIXUN_LOG_INFO(g_logger) << "idle" ;
+    // RADIXUN_LOG_INFO(g_logger) << "idle" ;
     epoll_event* events = new epoll_event[64]();
     std::shared_ptr<epoll_event> shared_events(events, [](epoll_event* ptr){delete[] ptr;});
  

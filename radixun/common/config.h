@@ -252,8 +252,8 @@ protected:
 };
 
 /**
- * @brief 配置参数模板子类,保存对应类型的参数值
- * @details T 参数的具体类型
+ *  配置参数模板子类,保存对应类型的参数值
+ *           T 参数的具体类型
  *          FromStr 从std::string转换成T类型的仿函数
  *          ToStr 从T转换成std::string的仿函数
  *          std::string 为YAML格式的字符串
@@ -266,12 +266,7 @@ public:
     typedef std::shared_ptr<ConfigVar> ptr;
     typedef std::function<void(const T& oldvalue , const T& new_value)> on_change_cb;
 
-    /**
-     * @brief 通过参数名,参数值,描述构造ConfigVar
-     * @param[in] name 参数名称有效字符为[0-9a-z_.]
-     * @param[in] default_value 参数的默认值
-     * @param[in] description 参数的描述
-     */
+    //通过参数名,参数值,描述构造ConfigVar
     ConfigVar(const std::string& name
             , const T& default_value
             , const std::string& description = "")
@@ -326,10 +321,7 @@ public:
     // 返回参数值的类型名称(typeinfo)
     std::string getTypeName() const override { return typeid(T).name();}
 
-    /**
-     * @brief 添加变化回调函数
-     * @return 返回该回调函数对应的唯一id,用于删除回调
-     */
+    //添加变化回调函数  返回该回调函数对应的唯一id,用于删除回调
     uint64_t addListener(on_change_cb cb){
         static uint64_t s_fun_id = 0;
         RWMutexType::WriteLock lock(m_mutex);
@@ -364,27 +356,14 @@ private:
     std::map<uint64_t , on_change_cb>m_cbs;
 };
 
-/**
- * @brief ConfigVar的管理类
- * @details 提供便捷的方法创建/访问ConfigVar
- */
-
+//ConfigVar的管理类
 class Config{
 public:
     typedef std::unordered_map<std::string , ConfigVarBase::ptr> ConfigVarMap;
     typedef RWMutex RWMutexType;
 
 
-    /**
-     * @brief 获取/创建对应参数名的配置参数
-     * @param[in] name 配置参数名称
-     * @param[in] default_value 参数默认值
-     * @param[in] description 参数描述
-     * @details 获取参数名为name的配置参数,如果存在直接返回
-     *          如果不存在,创建参数配置并用default_value赋值
-     * @return 返回对应的配置参数,如果参数名存在但是类型不匹配则返回nullptr
-     * @exception 如果参数名包含非法字符[^0-9a-z_.] 抛出异常 std::invalid_argument
-     */
+    //获取/创建对应参数名的配置参数
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name,
         const T& default_value , const std::string& description =""){
@@ -415,11 +394,7 @@ public:
             return v;
         }
 
-    /**
-     * @brief 查找配置参数
-     * @param[in] name 配置参数名称
-     * @return 返回配置参数名为name的配置参数
-     */
+    //查找配置参数
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name) {
         RWMutexType::ReadLock lock(GetMutex());

@@ -6,9 +6,9 @@
 #include "util.h"
 
 #if defined __GNUC__ || defined __llvm__
-/// LIKCLY 宏的封装, 告诉编译器优化,条件大概率成立
+// LIKCLY 宏的封装, 告诉编译器优化,条件大概率成立
 #   define RADIXUN_LICKLY(x)       __builtin_expect(!!(x), 1)
-/// LIKCLY 宏的封装, 告诉编译器优化,条件大概率不成立
+// LIKCLY 宏的封装, 告诉编译器优化,条件大概率不成立
 #   define RADIXUN_UNLICKLY(x)     __builtin_expect(!!(x), 0)
 #else
 #   define RADIXUN_LICKLY(x)      (x)
@@ -16,7 +16,7 @@
 #endif
 
 
-/// 断言宏封装
+// 断言宏封装
 #define RADIXUN_ASSERT(x) \
     if(RADIXUN_UNLICKLY(!(x))) { \
         RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "ASSERTION: " #x \
@@ -25,7 +25,7 @@
         assert(x); \
     }
 
-/// 断言宏封装
+// 断言宏封装
 #define RADIXUN_ASSERT2(x, w) \
     if(RADIXUN_UNLICKLY(!(x))) { \
         RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "ASSERTION: " #x \

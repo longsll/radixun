@@ -23,8 +23,7 @@ void run() {
     sd->addServlet("/xx", [](radixun::http::HttpRequest::ptr req
                 ,radixun::http::HttpResponse::ptr rsp
                 ,radixun::http::HttpSession::ptr session) {
-                               
-            rsp->setBody(req->toString());
+            rsp->setBody(req->toString() + radixun::BacktraceToString());
             return 0;
     });
 
@@ -96,7 +95,7 @@ void test_con() {
 void test_iom(){
     RADIXUN_LOG_DEBUG(g_logger) << "test";
     radixun::IOManager iom(3, false , "test_io"); 
-    iom.schedule(&test_lis);
+    iom.schedule(&run);
 }
 
 radixun::Timer::ptr s_timer;
@@ -112,8 +111,14 @@ void test_timer() {
     }, true);
 }
 
+void fun()
+{
+    std::cout << radixun::BacktraceToString();
+}
+
 int main()
 {
     // test_timer();
     test_iom();
+    // fun();
 }

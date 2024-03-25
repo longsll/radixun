@@ -12,12 +12,6 @@
 
 namespace radixun{
 
-/**
- * @brief: 获取文件夹下的所有文件
- * @param files: 装载文件夹下的所有文件
- * @param path: 文件夹路径
- * @param subfix: 检索文件后缀
- * */
 void FSUtil::ListAllFile(std::vector<std::string>& files
                             , const std::string& path
                             , const std::string& subfix) {
@@ -57,7 +51,6 @@ void FSUtil::ListAllFile(std::vector<std::string>& files
     closedir(dir);
 }
 
-/** 获取文件信息 */
 static int __lstat(const char* file, struct stat* st = nullptr) {
     struct stat lst;
     int ret = lstat(file, &lst);
@@ -68,7 +61,6 @@ static int __lstat(const char* file, struct stat* st = nullptr) {
     return ret;
 }
 
-/** 创建文件夹 */
 static int __mkdir(const char* dirname) {
     /* 判断该文件夹是否存在 */
     if(access(dirname, F_OK) == 0) {
@@ -129,9 +121,6 @@ bool FSUtil::IsRunningPidfile(const std::string& pidfile) {
     return true;
 }
 
-/**
- * @brief: 创建软连接
- * */
 bool FSUtil::Symlink(const std::string& frm, const std::string& to) {
     if(!Rm(to)) {
         return false;
@@ -139,9 +128,6 @@ bool FSUtil::Symlink(const std::string& frm, const std::string& to) {
     return ::symlink(frm.c_str(), to.c_str());
 }
 
-/**
- * @brief: 删除软连接
- * */
 bool FSUtil::Unlink(const std::string& filename, bool exist) {
     if(!exist && __lstat(filename.c_str())) {
         return true;
@@ -149,9 +135,6 @@ bool FSUtil::Unlink(const std::string& filename, bool exist) {
     return ::unlink(filename.c_str()) == 0;
 }
 
-/**
- * @brief: 删除文件
- * */
 bool FSUtil::Rm(const std::string& path) {
     struct stat st;
     if(lstat(path.c_str(), &st)) {
@@ -183,7 +166,6 @@ bool FSUtil::Rm(const std::string& path) {
     return ret;
 }
 
-/** 移动文件 */
 bool FSUtil::Mv(const std::string& from, const std::string& to) {
     if(!Rm(to)) {
         return false;
@@ -191,7 +173,6 @@ bool FSUtil::Mv(const std::string& from, const std::string& to) {
     return rename(from.c_str(), to.c_str()) == 0;
 }
 
-/** 获取真实路径 */
 bool FSUtil::Realpath(const std::string& path, std::string& rpath) {
     if(__lstat(path.c_str())) {
         return false;
@@ -225,7 +206,6 @@ bool FSUtil::OpenForWrite(std::ofstream& ofs, const std::string& filename
     return ofs.is_open();
 }
 
-/** 返回文件名 */
 std::string FSUtil::Dirname(const std::string& filename) {
     if(filename.empty()) {
         return ".";
@@ -240,7 +220,6 @@ std::string FSUtil::Dirname(const std::string& filename) {
     }
 }
 
-/** 返回文件名称 */
 std::string FSUtil::Basename(const std::string& filename) {
     if(filename.empty()) {
         return filename;

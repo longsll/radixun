@@ -10,12 +10,8 @@ namespace radixun{
 //文件管理类
 class FSUtil {
 public:
-    /**
-     * @brief: 获取文件夹下的所有文件
-     * @param files: 装载文件夹下的所有文件
-     * @param path: 文件夹路径
-     * @param subfix: 检索文件后缀
-     * */
+    //  获取文件夹下的所有文件
+    //  path: 文件夹路径  subfix: 检索文件后缀
     static void ListAllFile(std::vector<std::string>& files
                             , const std::string& path
                             , const std::string& subfix);
