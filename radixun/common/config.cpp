@@ -9,10 +9,9 @@ ConfigVarBase::ptr Config::LookupBase(const std::string& name) {
     return it == GetDatas().end() ? nullptr : it->second;
 }
 
-//
 static void ListAllMember(const std::string& prefix,
-                          const YAML::Node& node,
-                          std::list<std::pair<std::string, const YAML::Node> >& output) {
+                const YAML::Node& node,
+                std::list<std::pair<std::string, const YAML::Node> >& output) {
     if(prefix.find_first_not_of("abcdefghikjlmnopqrstuvwxyz._012345678")
             != std::string::npos) {
         RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "Config invalid name: " << prefix << " : " << node;
@@ -40,10 +39,8 @@ void Config::LoadFromYaml(const YAML::Node& root) {
         if(key.empty()) {
             continue;
         }
-
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
         ConfigVarBase::ptr var = LookupBase(key);
-
         if(var) {
             if(i.second.IsScalar()) {
                 var->fromString(i.second.Scalar());
@@ -56,7 +53,6 @@ void Config::LoadFromYaml(const YAML::Node& root) {
     }
 }
 
-//遍历所有的配置项并执行函数
 void Config::Visit(std::function<void(ConfigVarBase::ptr)> cb) {
     RWMutexType::ReadLock lock(GetMutex());
     ConfigVarMap& m = GetDatas();
@@ -64,7 +60,6 @@ void Config::Visit(std::function<void(ConfigVarBase::ptr)> cb) {
             it != m.end(); ++it) {
         cb(it->second);
     }
-
 }
 
 }

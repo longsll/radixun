@@ -27,7 +27,6 @@ public:
     }
 };
 
-//类型转换模板类片特化(YAML String 转换成 std::vector<T>)
 template<class T>
 class LexicalCast<std::string , std::vector<T> > {
 public:
@@ -43,7 +42,6 @@ public:
         return vec;
     }
 };
-//类型转换模板类片特化(std::vector<T> 转换成 YAML String)
 template<class T>
 class LexicalCast<std::vector<T>, std::string> {
 public:
@@ -57,8 +55,6 @@ public:
         return ss.str();
     }
 };
-
-//类型转换模板类片特化(YAML String 转换成 std::list<T>)
 template<class T>
 class LexicalCast<std::string , std::list<T> > {
 public:
@@ -74,7 +70,6 @@ public:
         return vec;
     }
 };
-//类型转换模板类片特化(std::list<T> 转换成 YAML String)
 template<class T>
 class LexicalCast<std::list<T> , std::string>{
 public:
@@ -88,8 +83,6 @@ public:
         return ss.str();
     }
 };
-
-//类型转换模板类片特化(YAML String 转换成 std::set<T>)
 template<class T>
 class LexicalCast<std::string, std::set<T> > {
 public:
@@ -105,9 +98,6 @@ public:
         return vec;
     }
 };
-
-
-//类型转换模板类片特化(std::set<T> 转换成 YAML String)
 template<class T>
 class LexicalCast<std::set<T>, std::string> {
 public:
@@ -121,8 +111,6 @@ public:
         return ss.str();
     }
 };
-
-//类型转换模板类片特化(YAML String 转换成 std::unordered_set<T>)
 template<class T>
 class LexicalCast<std::string, std::unordered_set<T> > {
 public:
@@ -138,8 +126,6 @@ public:
         return vec;
     }
 };
-
-//类型转换模板类片特化(std::unordered_set<T> 转换成 YAML String)
 template<class T>
 class LexicalCast<std::unordered_set<T>, std::string> {
 public:
@@ -153,8 +139,6 @@ public:
         return ss.str();
     }
 };
-
-//类型转换模板类片特化(YAML String 转换成 std::map<std::string, T>)
 template<class T>
 class LexicalCast<std::string, std::map<std::string, T> > {
 public:
@@ -172,8 +156,6 @@ public:
         return vec;
     }
 };
-
-//类型转换模板类片特化(std::map<std::string, T> 转换成 YAML String)
 template<class T>
 class LexicalCast<std::map<std::string, T>, std::string> {
 public:
@@ -187,8 +169,6 @@ public:
         return ss.str();
     }
 };
-
-//类型转换模板类片特化(YAML String 转换成 std::unordered_map<std::string, T>)
 template<class T>
 class LexicalCast<std::string, std::unordered_map<std::string, T> > {
 public:
@@ -206,8 +186,6 @@ public:
         return vec;
     }
 };
-
-//类型转换模板类片特化(std::unordered_map<std::string, T> 转换成 YAML String)
 template<class T>
 class LexicalCast<std::unordered_map<std::string, T>, std::string> {
 public:
@@ -231,7 +209,6 @@ public:
     :m_name(name) , m_description(description){
         std::transform(m_name.begin() , m_name.end() , m_name.begin() , ::tolower);
     }
-
     virtual ~ConfigVarBase() {}
 
     const std::string& getName() const {return m_name;}
@@ -248,61 +225,37 @@ protected:
     std::string m_name;
     //配置参数的描述
     std::string m_description;
-
 };
-
-/**
- *  配置参数模板子类,保存对应类型的参数值
- *           T 参数的具体类型
- *          FromStr 从std::string转换成T类型的仿函数
- *          ToStr 从T转换成std::string的仿函数
- *          std::string 为YAML格式的字符串
- */
-template<class T , class FromStr = LexicalCast<std::string , T>
-                ,  class ToStr = LexicalCast<T , std::string> >
+template<class T , class FromStr = LexicalCast<std::string , T>,  class ToStr = LexicalCast<T , std::string> >
 class ConfigVar : public ConfigVarBase {
 public:
     typedef RWMutex RWMutexType;
     typedef std::shared_ptr<ConfigVar> ptr;
     typedef std::function<void(const T& oldvalue , const T& new_value)> on_change_cb;
 
-    //通过参数名,参数值,描述构造ConfigVar
-    ConfigVar(const std::string& name
-            , const T& default_value
-            , const std::string& description = "")
+    ConfigVar(const std::string& name, const T& default_value , const std::string& description = "")
             : ConfigVarBase(name , description) , m_val(default_value) {}
 
-    // 将参数值转换成YAML String
     std::string toString() override {
         try{
             RWMutexType::ReadLock lock(m_mutex);
             return ToStr()(m_val);
         }catch(std::exception& e){
-            // RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "ConfigVar::toString exception"
-                // << e.what() << " convert: " << typeid(m_val).name() << " to string";
+            RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "ConfigVar::toString exception"
+                << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
         return "";
     }
-
-    // 从YAML String 转成参数的值
     bool fromString(const std::string& val) override {
         try{
             setValue(FromStr()(val));
         }catch(std::exception& e) {
-            // RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "ConfigVar::toString exception"
-                // << e.what() << " convert: string to " << typeid(m_val).name()
-                // << " - " << val;
+            RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "ConfigVar::toString exception"
+                << e.what() << " convert: string to " << typeid(m_val).name()
+                << " - " << val;
         }
         return false;
     }
-
-    // 获取当前参数的值
-    const T getValue() {
-        RWMutexType::ReadLock lock(m_mutex);
-        return m_val;
-    }
-
-
     // 设置当前参数的值(如果参数的值有发生变化,则通知对应的注册回调函数)
     void setValue(const T& v){
         {
@@ -317,11 +270,12 @@ public:
         RWMutexType::WriteLock lock(m_mutex);
         m_val = v;
     }
-
+    const T getValue() {
+        RWMutexType::ReadLock lock(m_mutex);
+        return m_val;
+    }
     // 返回参数值的类型名称(typeinfo)
     std::string getTypeName() const override { return typeid(T).name();}
-
-    //添加变化回调函数  返回该回调函数对应的唯一id,用于删除回调
     uint64_t addListener(on_change_cb cb){
         static uint64_t s_fun_id = 0;
         RWMutexType::WriteLock lock(m_mutex);
@@ -329,26 +283,19 @@ public:
         m_cbs[s_fun_id] = cb;
         return s_fun_id;
     }
-
-    // 删除回调函数
     void delListener(uint64_t key) {
         RWMutexType::WriteLock lock(m_mutex);
         m_cbs.erase(key);
     }
-
-    // 获取回调函数
     on_change_cb getListener(uint64_t key){
         RWMutexType::ReadLock lock(m_mutex);
         auto it = m_cbs.find(key);
         return it == m_cbs.end() ? nullptr : it->second;
     }
-
-    //  清理所有的回调函数
     void clearListener() {
         RWMutex::WriteLock lock(m_mutex);
         m_cbs.clear();
     }
-
 private:
     RWMutexType m_mutex;
     T m_val;
@@ -361,34 +308,26 @@ class Config{
 public:
     typedef std::unordered_map<std::string , ConfigVarBase::ptr> ConfigVarMap;
     typedef RWMutex RWMutexType;
-
-
     //获取/创建对应参数名的配置参数
     template<class T>
-    static typename ConfigVar<T>::ptr Lookup(const std::string& name,
-        const T& default_value , const std::string& description =""){
+    static typename ConfigVar<T>::ptr Lookup(const std::string& name, const T& default_value , const std::string& description =""){
             RWMutexType::WriteLock lock(GetMutex());
-            // RADIXUN_LOG_INFO(RADIXUN_LOG_ROOT()) << "Look up ing ....";
             auto it = GetDatas().find(name);
             if(it != GetDatas().end()) {
                 auto tmp = std::dynamic_pointer_cast<ConfigVar<T> >(it->second);
                 if(tmp) {
-                    // RADIXUN_LOG_INFO(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists";
+                    RADIXUN_LOG_INFO(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists";
                     return tmp;
                 }else{
-                    // RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists but type not "
-                    //     << typeid(T).name() << " real_type=" << it->second->getTypeName()
-                    //     << " " << it->second->toString();
+                    RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists but type not "
+                        << typeid(T).name() << " real_type=" << it->second->getTypeName()
+                        << " " << it->second->toString();
                         return nullptr;
                 }
             }
-
-            if(name.find_first_not_of("abcdefghikjlmnopqrstuvwxyz._012345678")
-                    != std::string::npos) {
-            // RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "Lookup name invalid " << name;
+            if(name.find_first_not_of("abcdefghikjlmnopqrstuvwxyz._012345678")!= std::string::npos) {
                 throw std::invalid_argument(name);
             }
-
             typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, default_value, description));
             GetDatas()[name] = v;
             return v;
@@ -404,17 +343,14 @@ public:
         }
         return std::dynamic_pointer_cast<ConfigVar<T> >(it->second);
     }
-
     //使用YAML::Node初始化配置模块
     static void LoadFromYaml(const YAML::Node& root);
-
     // 查找配置参数,返回配置参数的基类 
     static ConfigVarBase::ptr LookupBase(const std::string& name);
-
-    // 遍历配置模块里面所有配置项
+    //遍历所有的配置项并执行函数
     static void Visit(std::function<void(ConfigVarBase::ptr)> cb);
-
 private:
+    //可以不用创建实例
     // 返回所有的配置项
     static ConfigVarMap& GetDatas() {
         static ConfigVarMap s_datas;
