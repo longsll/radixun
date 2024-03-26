@@ -26,6 +26,7 @@ namespace radixun{
     //获取当前时间的微秒
     uint64_t GetCurrentUS();
 
+    //Map中查找键K对应的值，并将其转换为类型V
     template<class V, class Map, class K>
     V GetParamValue(const Map& m, const K& k, const V& def = V()) {
         auto it = m.find(k);
@@ -38,7 +39,7 @@ namespace radixun{
         }
         return def;
     }
-
+    //能否在Map中查找键K对应的值，并将其转换为类型V
     template<class V, class Map, class K>
     bool CheckGetParamValue(const Map& m, const K& k, V& v) {
         auto it = m.find(k);
