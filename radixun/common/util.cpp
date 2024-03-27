@@ -45,15 +45,15 @@ namespace radixun{
     }
 
     uint64_t GetCurrentMS(){
-        struct timeval tv;
-        gettimeofday(&tv , NULL);
-        return tv.tv_sec * 1000ul + tv.tv_usec / 1000;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
     }
 
     uint64_t GetCurrentUS() {
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        return tv.tv_sec * 1000 * 1000ul  + tv.tv_usec;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
     }
 
 }

@@ -121,7 +121,7 @@ void fun()
 
 int main()
 {
-    // test_timer();
+    test_timer();
     // test_iom();
     // fun();
     // std::string s = "[1, 2, 3, 4]";
@@ -129,16 +129,17 @@ int main()
     // for(auto x : v){
     //     std::cout << x << " ";
     // }
-    radixun::LexicalCast<std::string, std::vector<int>> intVectorConverter;
 
-    // 使用实例化后的模板类
-    std::string yamlString = "[1, 2, 3, 4]";
-    std::vector<int> convertedInts = intVectorConverter(yamlString);
-    for(auto& v : convertedInts){
-        std::cout << v << " ";
-    }
-    int k = radixun::LexicalCast<std::string , int> ()("5");
-    std::cout << k << "\n";
+
+    // radixun::LexicalCast<std::string, std::vector<int>> intVectorConverter;
+    // // 使用实例化后的模板类
+    // std::string yamlString = "[1, 2, 3, 4]";
+    // std::vector<int> convertedInts = intVectorConverter(yamlString);
+    // for(auto& v : convertedInts){
+    //     std::cout << v << " ";
+    // }
+    // int k = radixun::LexicalCast<std::string , int> ()("5");
+    // std::cout << k << "\n";
     return 0;
 
 }

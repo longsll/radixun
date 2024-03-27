@@ -241,8 +241,8 @@ public:
             RWMutexType::ReadLock lock(m_mutex);
             return ToStr()(m_val);
         }catch(std::exception& e){
-            RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "ConfigVar::toString exception"
-                << e.what() << " convert: " << typeid(m_val).name() << " to string";
+            // RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT()) << "ConfigVar::toString exception"
+            //     << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
         return "";
     }
@@ -250,9 +250,9 @@ public:
         try{
             setValue(FromStr()(val));
         }catch(std::exception& e) {
-            RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "ConfigVar::toString exception"
-                << e.what() << " convert: string to " << typeid(m_val).name()
-                << " - " << val;
+            // RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "ConfigVar::toString exception"
+            //     << e.what() << " convert: string to " << typeid(m_val).name()
+            //     << " - " << val;
         }
         return false;
     }
@@ -316,13 +316,13 @@ public:
             if(it != GetDatas().end()) {
                 auto tmp = std::dynamic_pointer_cast<ConfigVar<T> >(it->second);
                 if(tmp) {
-                    RADIXUN_LOG_INFO(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists";
+                    // RADIXUN_LOG_INFO(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists";
                     return tmp;
                 }else{
-                    RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists but type not "
-                        << typeid(T).name() << " real_type=" << it->second->getTypeName()
-                        << " " << it->second->toString();
-                        return nullptr;
+                    // RADIXUN_LOG_ERROR(RADIXUN_LOG_ROOT())<< "Lookup name=" << name << " exists but type not "
+                    //     << typeid(T).name() << " real_type=" << it->second->getTypeName()
+                    //     << " " << it->second->toString();
+                    //     return nullptr;
                 }
             }
             if(name.find_first_not_of("abcdefghikjlmnopqrstuvwxyz._012345678")!= std::string::npos) {

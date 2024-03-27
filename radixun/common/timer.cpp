@@ -142,13 +142,12 @@ void TimerManager::listExpiredCb(std::vector<std::function<void()> >& cbs) {
     if(m_timers.empty()) {
         return;
     }
-    bool rollover = detectClockRollover(now_ms);
-    if(!rollover && ((*m_timers.begin())->m_next > now_ms)) {
+    if((*m_timers.begin())->m_next > now_ms) {
         return;
     }
 
     Timer::ptr now_timer(new Timer(now_ms));
-    auto it = rollover ? m_timers.end() : m_timers.lower_bound(now_timer);
+    auto it = m_timers.lower_bound(now_timer);
     while(it != m_timers.end() && (*it)->m_next == now_ms) {
         ++it;
     }
@@ -177,15 +176,6 @@ void TimerManager::addTimer(Timer::ptr val, RWMutexType::WriteLock& lock) {
     if(at_front) {
         onTimerInsertedAtFront();
     }
-}
-
-bool TimerManager::detectClockRollover(uint64_t now_ms) {
-    bool rollover = false;
-    if(now_ms < m_previouseTime && now_ms < (m_previouseTime - 60 * 60 * 1000)) {
-        rollover = true;
-    }
-    m_previouseTime = now_ms;
-    return rollover;
 }
 
 bool TimerManager::hasTimer() {
